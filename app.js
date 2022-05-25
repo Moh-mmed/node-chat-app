@@ -34,7 +34,7 @@ if (process.env.NODE_ENV === 'development') {
 
 
 //* Body parser, reading data from body into req.body
-// app.use(express.json());
+app.use(express.json());
 // app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 //* COOKIE Parser,  For Authentication, we need to reed the JWT from the COOKIE using cookie-parser
