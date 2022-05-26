@@ -14,7 +14,7 @@ router.get('/auth-logout', authController.logout)
 router.get("/", (req, res) => {
     res.redirect('messages')
 });
-router.get("/messages", viewController.getChatHomepage);
+router.get("/messages", authController.protect, viewController.getChatHomepage);
 router.get("/login", viewController.getLoginForm);
 router.get("/signup", viewController.getSignupForm);
 
