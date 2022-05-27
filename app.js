@@ -1,19 +1,14 @@
-// This file is only for Express
-
 const path = require('path');
 const express = require('express');
 const morgan = require("morgan");
-
-// const rateLimit = require('express-rate-limit');
-// const helmet = require('helmet');
-// const mongoSanitize = require('express-mongo-sanitize');
+const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const cookieParser = require('cookie-parser');
-// const compression = require('compression');
+const compression = require('compression');
 const cors = require('cors');
 
 const AppError = require('./utils/appError');
-// const globalErrorHandler = require('./controllers/errorController');
+const globalErrorHandler = require('./controllers/errorController');
 const chatRouter = require('./routes/chatRoutes');
 
 const app = express();
@@ -26,7 +21,6 @@ app.use(cors());
 
 app.options('*', cors());
 
-// app.use(helmet());
 //* Development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
@@ -41,7 +35,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 //* Data Sanitization against NoSQL query injection
-// app.use(mongoSanitize());
+app.use(mongoSanitize());
 
 //* Data Sanitization against XSS
 app.use(xss());
@@ -51,25 +45,18 @@ app.use(xss());
 app.use(express.static(path.join(__dirname, 'public')));
 
 //* Compress all the texts that is sent to the client
-// app.use(compression());
+app.use(compression());
 
-//* Test middleware (we created it)
-app.use((req, res, next) => {
-  req.requestTime = new Date().toISOString();
-  next();
-});
-
-// 3. ROUTES
 
 app.use('/', chatRouter);
 
 
-// CATCH ALL ROUTES ERROR HANDLER
+//* CATCH ALL ROUTES ERROR HANDLER
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on the server`, 404)); 
 });
 
-// ERROR HANDLER MIDDLEWARE
-// app.use(globalErrorHandler);
+//* ERROR HANDLER MIDDLEWARE
+app.use(globalErrorHandler);
 
 module.exports = app;

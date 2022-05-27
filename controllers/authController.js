@@ -23,7 +23,7 @@ const createSendToken = (user, statusCode, res) => {
 
   if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
 
-res.cookie("jwt", token, cookieOptions);
+  res.cookie("jwt", token, cookieOptions);
   user.password = undefined;
 
   //* Send also the token to the client
@@ -66,10 +66,6 @@ exports.logout = catchAsync(async(req, res, next) => {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,
   });
-    
-  jwt.sign({ id: id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-    });
   res.status(200).json({ status: "success" });
 }); 
 
@@ -83,7 +79,6 @@ exports.protect = catchAsync(async (req, res, next) => {
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
     }
-    console.log(req.cookies);
     if (!token) {
         return next(new AppError("You are not logged in, please log in"));
     }
