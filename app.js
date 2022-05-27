@@ -25,8 +25,6 @@ app.options('*', cors());
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
-
-
 //* Body parser, reading data from body into req.body
 app.use(express.json());
 // app.use(express.urlencoded({ extended: true, limit: '10kb' }));
