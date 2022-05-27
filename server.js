@@ -26,18 +26,18 @@ const server = app.listen(port, () => {
   console.log('Listening on port 8080');
 });
 
-// process.on('unhandledRejection', (err) => {
-//   console.log('UNCAUGHT REJECTION!');
-//   console.log(err.name, err.message);
-//   server.close(() => {
-//     process.exit(1);
-//     //! WE NEED LATER IN THE HOSTING RESTART THE PROCESS (which many platforms do automatically)
-//   });
-// });
+process.on('unhandledRejection', (err) => {
+  console.log('UNCAUGHT REJECTION!');
+  console.log(err.name, err.message);
+  server.close(() => {
+    process.exit(1);
+    //! WE NEED LATER IN THE HOSTING RESTART THE PROCESS (which many platforms do automatically)
+  });
+});
 
-// process.on('SIGTERM', () => {
-//   console.log('SIGTERM RECEIVED. Shutting down gracefully');
-//   server.close(() => {
-//     console.log('Process terminated!');
-//   });
-// });
+process.on('SIGTERM', () => {
+  console.log('SIGTERM RECEIVED. Shutting down gracefully');
+  server.close(() => {
+    console.log('Process terminated!');
+  });
+});

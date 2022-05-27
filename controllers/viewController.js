@@ -1,6 +1,6 @@
 exports.getChatHomepage = (req, res, next) => {
     res.status(200).render('messages', {
-        title: 'Messages'
+      title: 'Messages',
     })
 }
 
