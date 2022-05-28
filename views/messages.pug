@@ -1,6 +1,85 @@
 extends base 
 
 block content
-  main.main
-      h2 Welcome Home #{user.name}
-      a.nav__el.nav__el--logout Log out
+  header.header
+    nav.nav.nav--home
+      a.nav__el(href='/messages') Messages
+    .header__logo
+      span.logo chatli
+    nav.nav.nav--user
+      if user
+        a.nav__el.nav__el--logout Log out
+        .nav__el
+          img.nav__user-img(src='/img/default.png' alt='user')
+          span= user.name.split(' ')[0]
+      else
+        a.nav__el(href='/login') Log in
+        a.nav__el.nav__el--cta(href='#') Sign up
+  main.messenger
+    .chatMenu
+      input.chatMenu__Input(type='text', placeholder='Search for friends')
+      .conversation 
+        img.conversation__img(src='/img/default.png' alt='user')
+        span.conversation__name Kacem
+
+    .chatBox
+      .chatBox__top
+        .message 
+          .message__top
+            img.message__img(src='/img/default.png' alt='user')
+            p.message__text Hi, how are you?
+          .message__bottom 1 hour ago
+        .message.own 
+          .message__top
+            img.message__img(src='/img/default.png' alt='user')
+            p.message__text Fine, how it's going wit you? it's been a long time since we met. good good good good good good good good 
+          .message__bottom 1 hour ago
+        .message 
+          .message__top
+            img.message__img(src='/img/default.png' alt='user')
+            p.message__text Hi, how are you?
+          .message__bottom 1 hour ago
+        .message.own 
+          .message__top
+            img.message__img(src='/img/default.png' alt='user')
+            p.message__text Fine, how it's going wit you? it's been a long time since we met. good good good good good good good good 
+          .message__bottom 1 hour ago
+        .message 
+          .message__top
+            img.message__img(src='/img/default.png' alt='user')
+            p.message__text Hi, how are you?
+          .message__bottom 1 hour ago
+        .message.own 
+          .message__top
+            img.message__img(src='/img/default.png' alt='user')
+            p.message__text Fine, how it's going wit you? it's been a long time since we met. good good good good good good good good 
+          .message__bottom 1 hour ago
+        .message 
+          .message__top
+            img.message__img(src='/img/default.png' alt='user')
+            p.message__text Hi, how are you?
+          .message__bottom 1 hour ago
+        .message.own 
+          .message__top
+            img.message__img(src='/img/default.png' alt='user')
+            p.message__text Fine, how it's going wit you? it's been a long time since we met. good good good good good good good good 
+          .message__bottom 1 hour ago
+      .chatBox__bottom
+        textarea.chatMessage__Input(name="message",placeholder="Aa", cols="30", rows="10") 
+        button.chatSubmit__button Send
+    .chatOnline
+      .chatOnline__friend
+        .chatOnline__imgContainer
+          img.chatOnline__img(src='/img/default.png' alt='user')
+          .chatOnline__Badge  
+        span.chatOnline__Name Karim
+      .chatOnline__friend
+        .chatOnline__imgContainer
+          img.chatOnline__img(src='/img/default.png' alt='user')
+          .chatOnline__Badge  
+        span.chatOnline__Name Meriem
+      .chatOnline__friend
+        .chatOnline__imgContainer
+          img.chatOnline__img(src='/img/default.png' alt='user')
+          .chatOnline__Badge  
+        span.chatOnline__Name Ahlam
