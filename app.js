@@ -10,6 +10,8 @@ const cors = require('cors');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
 const chatRouter = require('./routes/chatRoutes');
+const conversationRouter = require('./routes/conversationRoutes');
+const messageRouter = require('./routes/messageRoutes');
 
 const app = express();
 app.enable('trust proxy');
@@ -47,6 +49,8 @@ app.use(compression());
 
 
 app.use('/', chatRouter);
+app.use("/api/conversations", conversationRouter);
+app.use("/api/messages", messageRouter);
 
 
 //* CATCH ALL ROUTES ERROR HANDLER
