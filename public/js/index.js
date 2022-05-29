@@ -159,7 +159,7 @@ if (conversations) {
       );
       const chatBox = document.querySelector(".chatBox__top")
       chatBox.innerHTML = ''
-      messages.forEach(msg=>chatBox.appendChild(msg))
+      messages.forEach(msg=> chatBox.appendChild(msg))
     })
   })
 }

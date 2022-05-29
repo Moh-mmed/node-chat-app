@@ -1,4 +1,5 @@
-mixin conversationCard(conversation, index)
-    .conversation( class=`${index===0?'selected':''}`) 
-      img.conversation__img(src=`/img/${conversation.members[1].photo}` alt=`${conversation.members[1].name}`)
-      span.conversation__name= conversation.members[1].name
+mixin conversationCard(conversation, index, userId)
+    - var contact = conversation.members[0].id === userId ? 1 : 0
+    .conversation(data-conversation-id=`${conversation.id}`, class=`${index===0?'selected':''}`) 
+      img.conversation__img(src=`/img/${conversation.members[contact].photo}` alt=`${conversation.members[contact].name} ${contact}`)
+      span.conversation__name= conversation.members[contact].name

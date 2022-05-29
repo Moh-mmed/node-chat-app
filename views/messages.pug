@@ -22,7 +22,7 @@ block content
       input.chatMenu__Input(type='text', placeholder='Search for friends')
       if conversations.length > 0
         each conversation, index in conversations 
-          +conversationCard(conversation, index)
+          +conversationCard(conversation, index, user.id)
       else
         .no__conversations There is no conversation.
 
