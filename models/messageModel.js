@@ -6,7 +6,8 @@ const messageSchema = new mongoose.Schema(
       type: String,
         },
     sender: {
-        type: String,
+      type: mongoose.Schema.ObjectId,
+      ref: 'User'
     },
     text: {
         type: String
@@ -17,6 +18,13 @@ const messageSchema = new mongoose.Schema(
   }
 );
 
+messageSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'sender',
+    select: '-__v -email',
+  });
+  next();
+});
 const Message = mongoose.model("Message", messageSchema);
 
 module.exports = Message;

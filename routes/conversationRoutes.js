@@ -4,6 +4,6 @@ const conversationController = require('../controllers/conversationController')
 
 router.use(authController.protect)
 router.post('/', conversationController.createConversation )
-router.get('/:id', conversationController.getAllConversations )
+router.get('/', conversationController.getAllConversations )
 
 module.exports = router

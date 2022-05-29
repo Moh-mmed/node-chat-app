@@ -1,0 +1,7 @@
+mixin messageCard(message)
+    .message(class=`${message.sender===user.id ? 'own' : ''}`) 
+        .message__date SUN AT 20:22
+        .message__top
+            img.message__img(src='/img/default.png' alt='user')
+            p.message__text= message.text
+        //- .message__bottom= `${new Date( Date.now() - message.createdAt).getMinutes()} minutes ago`

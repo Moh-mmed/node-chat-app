@@ -329,14 +329,14 @@ body {
     align-items: center;
 }
 
-@media only screen and (max-width: 62.5em) {
+/* @media only screen and (max-width: 62.5em) {
     .header {
         -webkit-box-orient: vertical;
         -webkit-box-direction: normal;
         -ms-flex-direction: column;
         flex-direction: column;
     }
-}
+} */
 
 .header__logo .logo{
     font-size: 3.8rem;
@@ -346,14 +346,14 @@ body {
     letter-spacing: 1px;
 }
 
-@media only screen and (max-width: 62.5em) {
+/* @media only screen and (max-width: 62.5em) {
     .header__logo {
         -webkit-box-ordinal-group: 0;
         -ms-flex-order: -1;
         order: -1;
         margin-bottom: 1.5rem;
     }
-}
+} */
 
 
 /*! My Stylings  */
@@ -370,6 +370,7 @@ body {
 .chatMenu__Input{
     width: 90%;
     padding: 10px 0;
+    margin-bottom: 10px;
     border: none;
     border-bottom: 1px solid rgb(228, 224, 224);
 }
@@ -379,6 +380,9 @@ body {
     padding: 10px;
     margin-bottom: 15px;
     cursor:pointer;
+}
+.conversation.selected{
+    background-color: #55c57a;
 }
 .conversation:first-child{
     margin-top: 20px;
@@ -392,6 +396,10 @@ body {
     border-radius: 50%;
     object-fit: cover;
     margin-right: 20px;
+}
+.conversation__name{
+    font-size: 1.5rem;
+    font-weight: 600;
 }
 /* Chat Box */
 .chatBox{
@@ -411,10 +419,15 @@ body {
     flex-direction: column;
     margin-top: 15px;
 }
-.chatBox__top .message.own{
+.chatBox__top .message.own .message__top{
     align-items: flex-end;
 }
-
+.chatBox__top .message__date{
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    text-align: center;
+    color:#bbb;
+}
 .chatBox__top .message__top{
     display: flex;
 }
@@ -429,14 +442,18 @@ body {
     max-width: 300px;
     padding: 10px;
     border-radius: 15px;
-    background-color: #20bf6b;
+    background-color: #1db464d6;
+    font-size: 1.5rem;
+    color: white;
 }
 .chatBox__top .message.own .message__text{
     background-color: #1ec0f1;
 }
 .chatBox__top .message__bottom {
-    font-size: 12px;
-    margin-top: 10px;
+    font-size: 1rem;
+    margin-top: 5px;
+    margin-left: 262px;
+    font-style: italic
 }
 
 .chatBox__bottom{

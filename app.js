@@ -9,7 +9,7 @@ const cors = require('cors');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
-const chatRouter = require('./routes/chatRoutes');
+const viewRouter = require('./routes/viewRoutes');
 const conversationRouter = require('./routes/conversationRoutes');
 const messageRouter = require('./routes/messageRoutes');
 
@@ -48,7 +48,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(compression());
 
 
-app.use('/', chatRouter);
+app.use('/', viewRouter);
 app.use("/api/conversations", conversationRouter);
 app.use("/api/messages", messageRouter);
 

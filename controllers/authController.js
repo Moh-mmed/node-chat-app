@@ -96,8 +96,7 @@ exports.protect = catchAsync(async (req, res, next) => {
         );
     }
         
-
-    req.user = freshUser;
-    res.locals.user = freshUser;
+  req.user = freshUser;
+  res.locals.user = freshUser;
   next();
 });

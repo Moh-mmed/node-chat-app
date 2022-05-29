@@ -1,11 +1,12 @@
 
 // import { updateSettings } from "./updateSettings";
-// import { bookTour } from "./stripe";
 // import { showAlert } from "./alerts";
 // DOM ELEMENTS
 const loginForm = document.querySelector(".form--login");
 const signupForm = document.querySelector(".form--signup");
 const logOutBtn = document.querySelector(".nav__el--logout");
+const conversations = document.querySelectorAll(".conversation")
+
 
 const hideAlert = () => {
   const el = document.querySelector(".alert");
@@ -20,7 +21,6 @@ const showAlert = (type, msg, time = 7) => {
 };
 
 
-
 if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -29,7 +29,7 @@ if (loginForm) {
         try {
             const res = await axios({
               method: "POST",
-              url: "http://127.0.0.1:8080/auth-login",
+              url: "http://127.0.0.1:8080/api/auth-login",
               data: {
                 email,
                 password,
@@ -56,14 +56,14 @@ if (signupForm)
     const passwordConfirm = document.getElementById("password_confirm").value;
     try {
     const res = await axios({
-        method: "POST",
-        url: "http://127.0.0.1:8080/auth-signup",
-        data: {
+      method: 'POST',
+      url: 'http://127.0.0.1:8080/api/auth-signup',
+      data: {
         name,
         email,
         password,
         passwordConfirm,
-        },
+      },
     });
 
     if (res.data.status === "success") {
@@ -82,8 +82,8 @@ if (logOutBtn) {
     const logout = async () => {
         try {
             const res = await axios({
-            method: "GET",
-            url: "http://127.0.0.1:8080/auth-logout",
+              method: 'GET',
+              url: 'http://127.0.0.1:8080/api/auth-logout',
             });
           if ((res.data.status = "success")) {
               window.setTimeout(() => {
@@ -99,6 +99,69 @@ if (logOutBtn) {
     
 }
 
+
+if (conversations) {
+  const getAppropriateDate = (prevMsgDate, currMsgDate) => {
+    const messageDate = document.createElement('div')
+    messageDate.className = "message__date";
+    messageDate.innerHTML = "SUN AT 20:22"; 
+    const displayedDate = 'SUN AT 20:22' // compare currMsg time with the previous one
+    prevMsgDate = new Date(prevMsgDate)
+    currMsgDate = new Date(currMsgDate)
+    const diffTime = Math.abs(currMsgDate - prevMsgDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    // console.log(diffTime + " milliseconds");
+    // console.log(diffDays + " days");
+    // return null
+    return messageDate;
+  }
+  const createMessageElement = (message, userId, updateDate) => {
+    const messageWrapper = document.createElement("div")
+    const messageTop = document.createElement("div")
+    const img = document.createElement("img")
+    const messageText = document.createElement("p")
+    const messageBottom = document.createElement("div")
+    const messageDate = getAppropriateDate(
+      message.createdAt,
+      updateDate
+    )
+
+    messageWrapper.className = `message ${message.sender._id === userId && "own"}`;
+    messageTop.className = "message__top";
+    img.src = `/img/${message.sender.photo}`
+    img.className = 'message__img'
+    messageText.className = "message__text";
+    // messageBottom.className = "message__bottom";
+
+    if(messageDate) messageWrapper.appendChild(messageDate)
+
+    messageText.innerHTML = message.text;
+    messageTop.appendChild(img)
+    messageTop.appendChild(messageText);
+    messageWrapper.appendChild(messageTop)
+    return messageWrapper
+  };
+
+  conversations.forEach(item => {
+    const conversationId = item.dataset.conversationId;
+    item.addEventListener('click', async (e) => {
+      conversations.forEach(con => con.classList.remove('selected'))
+      item.classList.add('selected')
+      const res = await axios({
+        method: "GET",
+        url: `http://127.0.0.1:8080/api/messages/${conversationId}`,
+      });
+      const data = res.data.data.messages
+      const userId = res.data.data.userId
+      const messages = data.map((msg) =>
+        createMessageElement(msg, userId)
+      );
+      const chatBox = document.querySelector(".chatBox__top")
+      chatBox.innerHTML = ''
+      messages.forEach(msg=>chatBox.appendChild(msg))
+    })
+  })
+}
 
 const alertMessage = document.querySelector("body").dataset.alert;
 if (alertMessage) showAlert("success", alertMessage, 10);

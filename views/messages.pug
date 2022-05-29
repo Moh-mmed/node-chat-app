@@ -1,4 +1,6 @@
 extends base 
+include _conversationCard
+include _messageCard
 
 block content
   header.header
@@ -18,52 +20,13 @@ block content
   main.messenger
     .chatMenu
       input.chatMenu__Input(type='text', placeholder='Search for friends')
-      .conversation 
-        img.conversation__img(src='/img/default.png' alt='user')
-        span.conversation__name Kacem
+      each conversation, index in conversations 
+        +conversationCard(conversation, index)
 
     .chatBox
       .chatBox__top
-        .message 
-          .message__top
-            img.message__img(src='/img/default.png' alt='user')
-            p.message__text Hi, how are you?
-          .message__bottom 1 hour ago
-        .message.own 
-          .message__top
-            img.message__img(src='/img/default.png' alt='user')
-            p.message__text Fine, how it's going wit you? it's been a long time since we met. good good good good good good good good 
-          .message__bottom 1 hour ago
-        .message 
-          .message__top
-            img.message__img(src='/img/default.png' alt='user')
-            p.message__text Hi, how are you?
-          .message__bottom 1 hour ago
-        .message.own 
-          .message__top
-            img.message__img(src='/img/default.png' alt='user')
-            p.message__text Fine, how it's going wit you? it's been a long time since we met. good good good good good good good good 
-          .message__bottom 1 hour ago
-        .message 
-          .message__top
-            img.message__img(src='/img/default.png' alt='user')
-            p.message__text Hi, how are you?
-          .message__bottom 1 hour ago
-        .message.own 
-          .message__top
-            img.message__img(src='/img/default.png' alt='user')
-            p.message__text Fine, how it's going wit you? it's been a long time since we met. good good good good good good good good 
-          .message__bottom 1 hour ago
-        .message 
-          .message__top
-            img.message__img(src='/img/default.png' alt='user')
-            p.message__text Hi, how are you?
-          .message__bottom 1 hour ago
-        .message.own 
-          .message__top
-            img.message__img(src='/img/default.png' alt='user')
-            p.message__text Fine, how it's going wit you? it's been a long time since we met. good good good good good good good good 
-          .message__bottom 1 hour ago
+        each message in firstConversation 
+          +messageCard(message)
       .chatBox__bottom
         textarea.chatMessage__Input(name="message",placeholder="Aa", cols="30", rows="10") 
         button.chatSubmit__button Send
