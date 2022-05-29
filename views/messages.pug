@@ -20,15 +20,21 @@ block content
   main.messenger
     .chatMenu
       input.chatMenu__Input(type='text', placeholder='Search for friends')
-      each conversation, index in conversations 
-        +conversationCard(conversation, index)
+      if conversations.length > 0
+        each conversation, index in conversations 
+          +conversationCard(conversation, index)
+      else
+        .no__conversations There is no conversation.
 
     .chatBox
       .chatBox__top
-        each message in firstConversation.firstConversationMessages 
-          +messageCard(message, user.id)
+        if firstConversation
+          each message in firstConversation.firstConversationMessages 
+            +messageCard(message, user.id)
+        else 
+          .no__messages There is no message, start new one
       .chatBox__bottom
-        textarea.chatMessage__Input(name="message",placeholder="Aa", cols="30", rows="10", data-conversation-id=`${firstConversation.firstConversationId}`, data-user-id=`${user.id}`) 
+        textarea.chatMessage__Input(name="message",placeholder="Aa", cols="30", rows="10", data-conversation-id=`${firstConversation && firstConversation.firstConversationId}`, data-user-id=`${user.id}`) 
         button.chatSubmit__button Send
     .chatOnline
       .chatOnline__friend

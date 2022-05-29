@@ -2,16 +2,16 @@ const Message = require('../models/messageModel');
 const catchAsync = require('../utils/catchAsync');
 
 exports.createMessage = catchAsync(async (req, res, next) => {
-  const message = await Message.create(req.body).populate({
-    path: "sender",
-    select: "-__v -email",
-  });
-  console.log(message)
-  res.status(201).json({
-    status: 'success',
-    data: { message },
-  });
+  let message = await Message.create(req.body);
+    Message.populate(message, { path: "sender", select: "-__v -email"}).then((sender) => {
+       res.status(201).json({
+         status: "success",
+         data: { message },
+       });
+    });
 });
+
+
 
 exports.getAllMessages = catchAsync(async (req, res, next) => {
   const userId = req.user.id

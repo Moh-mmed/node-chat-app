@@ -3,16 +3,24 @@ const Message = require('../models/messageModel');
 const catchAsync = require('../utils/catchAsync');
 
 exports.getChatHomepage = catchAsync(async (req, res, next) => {
+  let firstConversation = null
   const userId = req.user.id;
   const conversations = await Conversation.find({
     members: { $in: [userId] },
   });
-  const firstConversationId = conversations[0].id
 
-  const firstConversationMessages = await Message.find({
-    conversationId: firstConversationId,
-  });
-
+  if (conversations.length > 0) {
+    console.log("there is con");
+    const firstConversationId = conversations[0].id;
+    const firstConversationMessages = await Message.find({
+      conversationId: firstConversationId,
+    });
+    firstConversation = {
+      firstConversationMessages,
+      firstConversationId,
+    }
+  }
+  
   
   // res.status(200).json({
   //   title: "Messages",
@@ -25,10 +33,7 @@ exports.getChatHomepage = catchAsync(async (req, res, next) => {
   res.status(200).render("messages", {
     title: "Messages",
     conversations,
-    firstConversation: {
-      firstConversationMessages,
-      firstConversationId,
-    },
+    firstConversation
   });
 });
 

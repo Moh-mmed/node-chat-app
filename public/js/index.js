@@ -45,9 +45,11 @@ const createMessageElement = (message, userId) => {
 
   messageWrapper.className = `message ${
     message.sender._id === userId ? "own" : ""
-  }`;
+    }`;
+  console.log(userId)
+  console.log(message.sender._id);
   messageTop.className = "message__top";
-  console.log(message.sender.photo);
+  img.src = `/img/${message.sender.photo}`;
   img.className = "message__img";
   messageText.className = "message__text";
   // messageBottom.className = "message__bottom";
@@ -186,7 +188,7 @@ if (newMessageInput) {
         e.target.classList.remove("disabled");
         //load the message
         console.log(res.data.data.message);
-        const newMessage = createMessageElement(res.data.data.message)
+        const newMessage = createMessageElement(res.data.data.message, sender)
         document.querySelector(".chatBox__top").appendChild(newMessage);
       }
     } catch (err) {
