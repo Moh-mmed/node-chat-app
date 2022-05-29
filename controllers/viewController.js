@@ -9,20 +9,27 @@ exports.getChatHomepage = catchAsync(async (req, res, next) => {
   });
   const firstConversationId = conversations[0].id
 
-  const firstConversation = await Message.find({
+  const firstConversationMessages = await Message.find({
     conversationId: firstConversationId,
   });
 
   
   // res.status(200).json({
-  //   title: 'Messages',
+  //   title: "Messages",
   //   conversations,
-  //   firstConversation,
+  //   firstConversation: {
+  //     firstConversationMessages,
+  //     firstConversationId,
+  //   },
   // });
-  res.status(200).render('messages', {
-    title: 'Messages',
+  res.status(200).render("messages", {
+    title: "Messages",
     conversations,
-    firstConversation});
+    firstConversation: {
+      firstConversationMessages,
+      firstConversationId,
+    },
+  });
 });
 
 exports.getLoginForm = (req, res) => {

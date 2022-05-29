@@ -2,7 +2,11 @@ const Message = require('../models/messageModel');
 const catchAsync = require('../utils/catchAsync');
 
 exports.createMessage = catchAsync(async (req, res, next) => {
-  const message = await Message.create(req.body);
+  const message = await Message.create(req.body).populate({
+    path: "sender",
+    select: "-__v -email",
+  });
+  console.log(message)
   res.status(201).json({
     status: 'success',
     data: { message },

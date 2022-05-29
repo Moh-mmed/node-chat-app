@@ -420,7 +420,7 @@ body {
     margin-top: 15px;
 }
 .chatBox__top .message.own .message__top{
-    align-items: flex-end;
+    align-self: end;
 }
 .chatBox__top .message__date{
     margin-bottom: 1rem;
@@ -472,10 +472,13 @@ body {
     height: 40px;
     border: none;
     cursor: pointer;
-    background-color: teal;
+    background-color: rgb(0, 128, 128);
     color: white;
 }
-
+.chatSubmit__button.disabled{
+    background-color:rgba(0, 128, 128,.6);
+    cursor: progress;
+}
 /* Chat Online */
 .chatOnline{
     flex: 3;

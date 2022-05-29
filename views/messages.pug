@@ -25,10 +25,10 @@ block content
 
     .chatBox
       .chatBox__top
-        each message in firstConversation 
-          +messageCard(message)
+        each message in firstConversation.firstConversationMessages 
+          +messageCard(message, user.id)
       .chatBox__bottom
-        textarea.chatMessage__Input(name="message",placeholder="Aa", cols="30", rows="10") 
+        textarea.chatMessage__Input(name="message",placeholder="Aa", cols="30", rows="10", data-conversation-id=`${firstConversation.firstConversationId}`, data-user-id=`${user.id}`) 
         button.chatSubmit__button Send
     .chatOnline
       .chatOnline__friend

@@ -25,6 +25,7 @@ messageSchema.pre(/^find/, function (next) {
   });
   next();
 });
+
 const Message = mongoose.model("Message", messageSchema);
 
 module.exports = Message;
