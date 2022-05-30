@@ -1,5 +1,7 @@
 const path = require('path');
+const http = require('http')
 const express = require('express');
+const socketio = require('socket.io')
 const morgan = require("morgan");
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
@@ -14,6 +16,12 @@ const conversationRouter = require('./routes/conversationRoutes');
 const messageRouter = require('./routes/messageRoutes');
 
 const app = express();
+//! We Do this refactoring because socket.io expects a raw http server
+const server = http.createServer(app)
+
+//* Initiate a socketio 
+const io = socketio(server)
+
 app.enable('trust proxy');
 
 app.set('view engine', 'pug');
@@ -53,6 +61,15 @@ app.use("/api/conversations", conversationRouter);
 app.use("/api/messages", messageRouter);
 
 
+//* Listen to socket.io
+
+io.on('connection', () => {
+  console.log("New connection to socket.io")
+})
+
+
+
+
 //* CATCH ALL ROUTES ERROR HANDLER
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on the server`, 404)); 
@@ -61,4 +78,5 @@ app.all('*', (req, res, next) => {
 //* ERROR HANDLER MIDDLEWARE
 app.use(globalErrorHandler);
 
-module.exports = app;
+
+module.exports = server;

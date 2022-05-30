@@ -1,4 +1,3 @@
-import axios from 'axios'
 // import { updateSettings } from "./updateSettings";
 import { showAlert } from "./alerts";
 import { login, logout } from "./login";
@@ -6,8 +5,8 @@ import signup from "./signup";
 import {
   getConversations,
   submitNewMessage,
-  keepChatBoxScrolledDown,
 } from "./chat";
+
 
 // DOM ELEMENTS
 const loginForm = document.querySelector(".form--login");
