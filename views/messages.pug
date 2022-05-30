@@ -34,7 +34,14 @@ block content
         else 
           .no__messages There is no message, start new one
       .chatBox__bottom
-        textarea.chatMessage__Input(name="message",placeholder="Aa", cols="30", rows="10", data-conversation-id=`${firstConversation && firstConversation.firstConversationId}`, data-user-id=`${user.id}`) 
+        - var currConvId = 'cool'
+        - var currConvReceiverId = 'do'
+          if firstConversation
+            - currConvId = firstConversation.firstConversationId
+            - var index = firstConversation.firstConversationMembers[0].id === user.id ? 1 : 0
+            - currConvReceiverId = firstConversation.firstConversationMembers[index].id
+
+        textarea.chatMessage__Input(name="message",placeholder="Aa", cols="30", rows="10", data-conversation-id=`${currConvId}`, data-user-id=user.id, data-receiver-id=`${currConvReceiverId}`) 
         button.chatSubmit__button Send
     .chatOnline
       .chatOnline__friend
@@ -52,5 +59,3 @@ block content
           img.chatOnline__img(src='/img/default.png' alt='user')
           .chatOnline__Badge  
         span.chatOnline__Name Ahlam
-  script(src="/socket.io/socket.io.js")
-  script(src='/js/socketio.js')

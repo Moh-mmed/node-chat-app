@@ -61,10 +61,62 @@ app.use("/api/conversations", conversationRouter);
 app.use("/api/messages", messageRouter);
 
 
-//* Listen to socket.io
+//* Socket.io
+let users = []
 
-io.on('connection', () => {
-  console.log("New connection to socket.io")
+//* Push newly connected user
+const addUser = (userId, socketId) => {
+  !users.some((user) => user.userId === userId) &&
+    users.push({ userId, socketId });
+};
+
+//* Remove disconnected user from socket.io
+const removeUser = (socketId) => {
+  users = users.filter(user=> user.socketId !== socketId)
+}
+
+//* Get user 
+const getUser = (userId) => {
+  return users.find(user => user.userId === userId)
+}
+
+//* Listen to socket.io
+io.on('connection', (socket) => {
+
+  //* Take userId and socketId from user and add to connected users Array
+  socket.on('addUser', (userId) => {
+    addUser(userId, socket.id);
+    //* Send all connected users to everyone
+    io.emit("getUsers", users)
+  })
+
+  //* Emit a welcome message when connecting to the websocket
+  socket.emit('message', 'Welcome to the chat')
+  socket.broadcast.emit("message", "New user has joined");
+
+
+
+  //* receive the submitted message
+  socket.on("submitMessage", (messageData, callback) => {
+    //* Send back an acknowledgment, you can also use it to filter out messages like profanity
+    // if (isProfane) {
+    //   return callback("not delivered, because it's harmful");
+    // }
+
+    //* send message to the other client
+    const user = getUser(messageData.receiverId);
+    user && io.to(user.socketId).emit("sendBackMessage", messageData.message);
+    callback("delivered");
+  });
+
+
+
+  //* When disconnect
+  socket.on('disconnect', () => {
+    //* You have also disconnect from socket io
+    removeUser(socket.id)
+    io.emit("getUsers", users);
+  })
 })
 
 

@@ -1,5 +1,5 @@
 mixin conversationCard(conversation, index, userId)
     - var contact = conversation.members[0].id === userId ? 1 : 0
-    .conversation(data-conversation-id=`${conversation.id}`, class=`${index===0?'selected':''}`) 
-      img.conversation__img(src=`/img/${conversation.members[contact].photo}` alt=`${conversation.members[contact].name} ${contact}`)
+    .conversation(data-conversation-id=`${conversation.id}`, data-receiver-id=`${conversation.members[contact].id}`, class=`${index===0?'selected':''}`) 
+      img.conversation__img(src=`/img/${conversation.members[contact].photo}` alt=`${conversation.members[contact].name}`)
       span.conversation__name= conversation.members[contact].name

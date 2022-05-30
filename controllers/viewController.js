@@ -11,24 +11,17 @@ exports.getChatHomepage = catchAsync(async (req, res, next) => {
 
   if (conversations.length > 0) {
     const firstConversationId = conversations[0].id;
+    const firstConversationMembers = conversations[0].members;
     const firstConversationMessages = await Message.find({
       conversationId: firstConversationId,
     });
     firstConversation = {
       firstConversationMessages,
       firstConversationId,
+      firstConversationMembers
     }
   }
   
-  
-  // res.status(200).json({
-  //   title: "Messages",
-  //   conversations,
-  //   firstConversation: {
-  //     firstConversationMessages,
-  //     firstConversationId,
-  //   },
-  // });
   res.status(200).render("messages", {
     title: "Messages",
     conversations,

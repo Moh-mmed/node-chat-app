@@ -4820,7 +4820,7 @@ exports.createMessageElement = createMessageElement;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.submitNewMessage = exports.keepChatBoxScrolledDown = exports.getConversations = void 0;
+exports.submitNewMessage = exports.getConversations = exports.autoScroll = void 0;
 
 var _axios = _interopRequireDefault(require("axios"));
 
@@ -4838,17 +4838,57 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
+var socket = io();
 var chatBox = document.querySelector(".chatBox__top");
+var inputField = document.querySelector(".chatBox__bottom .chatMessage__Input");
+var userId = undefined;
 
-var keepChatBoxScrolledDown = function keepChatBoxScrolledDown() {
-  return chatBox.scrollTop = chatBox.scrollHeight;
+if (inputField) {
+  userId = inputField.dataset.userId; //* Sending userId to websocket
+
+  socket.emit("addUser", userId);
+} //* Socket.io
+
+
+socket.on("message", function (msg) {
+  console.log(msg);
+}); //* Get all Users
+
+socket.on("getUsers", function (users) {
+  console.log(users);
+}); //* Receive sent messages
+
+socket.on("sendBackMessage", function (msg) {
+  console.log(msg);
+  var newMessage = (0, _messageBlock.createMessageElement)(msg, userId);
+  chatBox.appendChild(newMessage);
+  autoScroll();
+});
+
+var autoScroll = function autoScroll() {
+  chatBox.scrollTop = chatBox.scrollHeight; // // New message element 
+  // const newMessageEl = chatBox.lastElementChild
+  // // Heigh of the new message 
+  // const newMessageStyles = getComputedStyle(newMessageEl)
+  // const newMessageMargin = parseInt(newMessageStyles.marginBottom)
+  // const newMessageHeight = newMessageEl.offsetHeight + newMessageMargin;
+  // // Visible height 
+  // const visibleHeight = chatBox.offsetHeight 
+  // // Height of messages container 
+  // const containerHeight = chatBox.scrollHeight; 
+  // // How far has scrolled
+  // const scrollOffset = chatBox.scrollTop + visibleHeight;
+  // if (containerHeight - newMessageHeight <= scrollOffset) {
+  //   chatBox.scrollTop = chatBox.scrollHeight
+  // }
 };
 
-exports.keepChatBoxScrolledDown = keepChatBoxScrolledDown;
+exports.autoScroll = autoScroll;
 
 var getConversations = function getConversations(conversations, input) {
   conversations.forEach(function (item) {
     var conversationId = item.dataset.conversationId;
+    var receiverId = item.dataset.receiverId;
     item.addEventListener("click", /*#__PURE__*/function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(e) {
         var res, data, userId, messages;
@@ -4857,17 +4897,18 @@ var getConversations = function getConversations(conversations, input) {
             switch (_context.prev = _context.next) {
               case 0:
                 input.dataset.conversationId = conversationId;
+                input.dataset.receiverId = receiverId;
                 conversations.forEach(function (con) {
                   return con.classList.remove("selected");
                 });
                 item.classList.add("selected");
-                _context.next = 5;
+                _context.next = 6;
                 return (0, _axios.default)({
                   method: "GET",
                   url: "http://127.0.0.1:8080/api/messages/".concat(conversationId)
                 });
 
-              case 5:
+              case 6:
                 res = _context.sent;
                 data = res.data.data.messages;
                 userId = res.data.data.userId;
@@ -4878,9 +4919,9 @@ var getConversations = function getConversations(conversations, input) {
                 messages.forEach(function (msg) {
                   return chatBox.appendChild(msg);
                 });
-                keepChatBoxScrolledDown();
+                autoScroll();
 
-              case 12:
+              case 13:
               case "end":
                 return _context.stop();
             }
@@ -4900,13 +4941,13 @@ exports.getConversations = getConversations;
 var submitNewMessage = function submitNewMessage(input, button) {
   button.addEventListener("click", /*#__PURE__*/function () {
     var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(e) {
-      var conversationId, sender, text, res, newMessage;
+      var conversationId, receiverId, text, res, socketMessage, newMessage;
       return _regeneratorRuntime().wrap(function _callee2$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
               conversationId = input.dataset.conversationId;
-              sender = input.dataset.userId;
+              receiverId = input.dataset.receiverId;
               text = input.value.trim();
               input.value = "";
               input.focus();
@@ -4918,7 +4959,7 @@ var submitNewMessage = function submitNewMessage(input, button) {
                 url: "http://127.0.0.1:8080/api/messages",
                 data: {
                   conversationId: conversationId,
-                  sender: sender,
+                  sender: userId,
                   text: text
                 }
               });
@@ -4928,9 +4969,18 @@ var submitNewMessage = function submitNewMessage(input, button) {
 
               if (res.data.status === "success") {
                 e.target.classList.remove("disabled");
-                newMessage = (0, _messageBlock.createMessageElement)(res.data.data.message, sender);
+                socketMessage = {
+                  message: res.data.data.message,
+                  receiverId: receiverId
+                }; // * Send the message to the other client
+
+                socket.emit("submitMessage", socketMessage, function (ackMes) {
+                  //! Use it to confirm the delivery
+                  console.log("the message has been ".concat(ackMes));
+                });
+                newMessage = (0, _messageBlock.createMessageElement)(res.data.data.message, userId);
                 chatBox.appendChild(newMessage);
-                keepChatBoxScrolledDown();
+                autoScroll();
               }
 
               _context2.next = 17;
@@ -4957,7 +5007,6 @@ var submitNewMessage = function submitNewMessage(input, button) {
 };
 
 exports.submitNewMessage = submitNewMessage;
-if (chatBox) keepChatBoxScrolledDown();
 },{"axios":"../../node_modules/axios/index.js","./alerts":"alerts.js","./messageBlock":"messageBlock.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
@@ -4977,6 +5026,7 @@ var loginForm = document.querySelector(".form--login");
 var signupForm = document.querySelector(".form--signup");
 var logOutBtn = document.querySelector(".nav__el--logout");
 var conversations = document.querySelectorAll(".conversation");
+var chatBox = document.querySelector(".chatBox__top");
 var newMessageInput = document.querySelector(".chatBox__bottom .chatMessage__Input");
 var newMessageButton = document.querySelector(".chatBox__bottom .chatSubmit__button"); // Code
 
@@ -4984,7 +5034,8 @@ if (loginForm) loginForm.addEventListener("submit", _login.login);
 if (signupForm) signupForm.addEventListener("submit", _signup.default);
 if (logOutBtn) logOutBtn.addEventListener("click", _login.logout);
 if (conversations) (0, _chat.getConversations)(conversations, newMessageInput);
-if (newMessageInput) (0, _chat.submitNewMessage)(newMessageInput, newMessageButton);
+if (newMessageInput && newMessageButton) (0, _chat.submitNewMessage)(newMessageInput, newMessageButton);
+if (chatBox) (0, _chat.autoScroll)();
 var alertMessage = document.querySelector("body").dataset.alert;
 if (alertMessage) (0, _alerts.showAlert)("success", alertMessage, 10);
 },{"./alerts":"alerts.js","./login":"login.js","./signup":"signup.js","./chat":"chat.js"}],"../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
@@ -5015,7 +5066,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50657" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55472" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

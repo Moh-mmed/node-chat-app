@@ -5,6 +5,7 @@ import signup from "./signup";
 import {
   getConversations,
   submitNewMessage,
+  autoScroll,
 } from "./chat";
 
 
@@ -13,6 +14,7 @@ const loginForm = document.querySelector(".form--login");
 const signupForm = document.querySelector(".form--signup");
 const logOutBtn = document.querySelector(".nav__el--logout");
 const conversations = document.querySelectorAll(".conversation")
+const chatBox = document.querySelector(".chatBox__top");
 const newMessageInput = document.querySelector(
   ".chatBox__bottom .chatMessage__Input"
 );
@@ -27,8 +29,9 @@ if (logOutBtn) logOutBtn.addEventListener("click", logout);
 
 if (conversations) getConversations(conversations, newMessageInput);
   
-if (newMessageInput) submitNewMessage(newMessageInput, newMessageButton)
+if (newMessageInput && newMessageButton) submitNewMessage(newMessageInput, newMessageButton)
 
+if (chatBox) autoScroll();
 
 const alertMessage = document.querySelector("body").dataset.alert;
 if (alertMessage) showAlert("success", alertMessage, 10);
