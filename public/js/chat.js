@@ -19,20 +19,21 @@ if (inputField) {
 
 //* Socket.io
 socket.on("message", (msg) => {
-  console.log(msg);
+  // console.log(msg);
 });
 
 //* Get all Users
 socket.on("getUsers", (users) => {
-  console.log(users)
+  // console.log(users)
 });
 
 //* Receive sent messages
 socket.on("sendBackMessage", (msg) => {
-  console.log(msg)
-  const newMessage = createMessageElement(msg, userId);
-  chatBox.appendChild(newMessage);
-  autoScroll();
+  if (inputField.dataset.conversationId === msg.conversationId) {
+    const newMessage = createMessageElement(msg, userId);
+    chatBox.appendChild(newMessage);
+    autoScroll();
+  }
 });
   
 
@@ -113,7 +114,7 @@ export const submitNewMessage = (input, button) => {
         // * Send the message to the other client
         socket.emit("submitMessage", socketMessage, (ackMes) => {
           //! Use it to confirm the delivery
-          console.log(`the message has been ${ackMes}`);
+          // console.log(`the message has been ${ackMes}`);
         });
 
         const newMessage = createMessageElement(res.data.data.message, userId);

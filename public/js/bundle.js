@@ -4850,19 +4850,18 @@ if (inputField) {
 } //* Socket.io
 
 
-socket.on("message", function (msg) {
-  console.log(msg);
+socket.on("message", function (msg) {// console.log(msg);
 }); //* Get all Users
 
-socket.on("getUsers", function (users) {
-  console.log(users);
+socket.on("getUsers", function (users) {// console.log(users)
 }); //* Receive sent messages
 
 socket.on("sendBackMessage", function (msg) {
-  console.log(msg);
-  var newMessage = (0, _messageBlock.createMessageElement)(msg, userId);
-  chatBox.appendChild(newMessage);
-  autoScroll();
+  if (inputField.dataset.conversationId === msg.conversationId) {
+    var newMessage = (0, _messageBlock.createMessageElement)(msg, userId);
+    chatBox.appendChild(newMessage);
+    autoScroll();
+  }
 });
 
 var autoScroll = function autoScroll() {
@@ -4974,9 +4973,8 @@ var submitNewMessage = function submitNewMessage(input, button) {
                   receiverId: receiverId
                 }; // * Send the message to the other client
 
-                socket.emit("submitMessage", socketMessage, function (ackMes) {
-                  //! Use it to confirm the delivery
-                  console.log("the message has been ".concat(ackMes));
+                socket.emit("submitMessage", socketMessage, function (ackMes) {//! Use it to confirm the delivery
+                  // console.log(`the message has been ${ackMes}`);
                 });
                 newMessage = (0, _messageBlock.createMessageElement)(res.data.data.message, userId);
                 chatBox.appendChild(newMessage);

@@ -91,8 +91,8 @@ io.on('connection', (socket) => {
   })
 
   //* Emit a welcome message when connecting to the websocket
-  socket.emit('message', 'Welcome to the chat')
-  socket.broadcast.emit("message", "New user has joined");
+  // socket.emit('message', 'Welcome to the chat')
+  // socket.broadcast.emit("message", "New user has joined");
 
 
 
