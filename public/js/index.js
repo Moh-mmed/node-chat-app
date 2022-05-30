@@ -6,10 +6,14 @@ const loginForm = document.querySelector(".form--login");
 const signupForm = document.querySelector(".form--signup");
 const logOutBtn = document.querySelector(".nav__el--logout");
 const conversations = document.querySelectorAll(".conversation")
+const chatBox = document.querySelector(".chatBox__top");
 const newMessageInput = document.querySelector(
   ".chatBox__bottom .chatMessage__Input"
 );
-
+function keepChatBoxScrolledDown() {
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+keepChatBoxScrolledDown();
 const hideAlert = () => {
   const el = document.querySelector(".alert");
   if (el) el.parentElement.removeChild(el);
@@ -46,8 +50,6 @@ const createMessageElement = (message, userId) => {
   messageWrapper.className = `message ${
     message.sender._id === userId ? "own" : ""
     }`;
-  console.log(userId)
-  console.log(message.sender._id);
   messageTop.className = "message__top";
   img.src = `/img/${message.sender.photo}`;
   img.className = "message__img";
@@ -88,7 +90,6 @@ if (loginForm) {
         }
     });
 }
-
 if (signupForm)
     signupForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -157,9 +158,9 @@ if (conversations) {
       const messages = data.map((msg) =>
         createMessageElement(msg, userId)
       );
-      const chatBox = document.querySelector(".chatBox__top")
       chatBox.innerHTML = ''
       messages.forEach(msg=> chatBox.appendChild(msg))
+      keepChatBoxScrolledDown();
     })
   })
 }
@@ -186,10 +187,9 @@ if (newMessageInput) {
 
       if (res.data.status === "success") {
         e.target.classList.remove("disabled");
-        //load the message
-        console.log(res.data.data.message);
         const newMessage = createMessageElement(res.data.data.message, sender)
-        document.querySelector(".chatBox__top").appendChild(newMessage);
+        chatBox.appendChild(newMessage);
+        keepChatBoxScrolledDown()
       }
     } catch (err) {
       e.target.classList.remove("disabled");

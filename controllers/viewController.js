@@ -10,7 +10,6 @@ exports.getChatHomepage = catchAsync(async (req, res, next) => {
   });
 
   if (conversations.length > 0) {
-    console.log("there is con");
     const firstConversationId = conversations[0].id;
     const firstConversationMessages = await Message.find({
       conversationId: firstConversationId,
