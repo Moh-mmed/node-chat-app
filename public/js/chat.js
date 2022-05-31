@@ -2,13 +2,13 @@ import axios from "axios";
 const socket = io();
 import { showAlert } from "./alerts";
 import { createMessageElement } from "./messageBlock";
+import { setOnlineFriends } from "./onlineFriend";
 
 const chatBox = document.querySelector(".chatBox__top");
 const inputField = document.querySelector(".chatBox__bottom .chatMessage__Input");
 
 let userId = undefined
-
-
+let allFriends = undefined
 
 if (inputField) {
   userId = inputField.dataset.userId;
@@ -18,13 +18,34 @@ if (inputField) {
 }
 
 //* Socket.io
-socket.on("message", (msg) => {
-  // console.log(msg);
+socket.on("message", async(msg) => {
+  console.log(msg);
 });
 
 //* Get all Users
-socket.on("getUsers", (users) => {
-  // console.log(users)
+socket.on("getUsers", async (users) => {
+  let onlineUsers;
+  users = users.filter((user)=> user.userId !== userId)
+  //* Display online friends
+  if (!allFriends) {
+    const res = await axios({
+    method: "GET",
+    url: 'http://127.0.0.1:8080/api/users',
+    });
+
+    allFriends = res.data.data.users;
+
+    onlineUsers = res.data.data.users.filter((user) =>
+      users.some((u) => user._id === u.userId)
+    );
+  } else {
+    onlineUsers = allFriends.filter((user) =>
+      users.some((u) => user._id === u.userId)
+    );
+  }
+  
+  if (onlineUsers) setOnlineFriends(onlineUsers);
+  
 });
 
 //* Receive sent messages
@@ -36,8 +57,6 @@ socket.on("sendBackMessage", (msg) => {
   }
 });
   
-
-
 export const autoScroll = () => {
   chatBox.scrollTop = chatBox.scrollHeight;
   // // New message element 

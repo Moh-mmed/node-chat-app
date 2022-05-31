@@ -45,15 +45,9 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-//? Set passwordChangedAt once we set new password or reset.
-// userSchema.pre("save", function (next) {
-//   if (!this.isModified("password") || this.isNew) return next();
-
-//   //! We add 1s because of taking a bit time to Update the document into DB meanwhile the JWT is generated already so the iAt will be less than passwordChangedAt thus the user can not be logged in directly. He needs to Login again
-//   this.passwordChangedAt = Date.now() - 1000;
-//   next();
-// });
-
+userSchema.pre(/^find/, function () {
+  this.select( "-__v -email");
+});
 
 //? Checking password by instant method
 userSchema.methods.correctPassword = async (candidatePassword, userPassword) =>

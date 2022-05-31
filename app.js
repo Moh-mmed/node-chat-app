@@ -14,6 +14,7 @@ const globalErrorHandler = require('./controllers/errorController');
 const viewRouter = require('./routes/viewRoutes');
 const conversationRouter = require('./routes/conversationRoutes');
 const messageRouter = require('./routes/messageRoutes');
+const userRouter = require('./routes/userRoutes');
 
 const app = express();
 //! We Do this refactoring because socket.io expects a raw http server
@@ -59,6 +60,7 @@ app.use(compression());
 app.use('/', viewRouter);
 app.use("/api/conversations", conversationRouter);
 app.use("/api/messages", messageRouter);
+app.use("/api/users", userRouter);
 
 
 //* Socket.io
@@ -83,6 +85,8 @@ const getUser = (userId) => {
 //* Listen to socket.io
 io.on('connection', (socket) => {
 
+  socket.emit('message', 'Connected successfully')
+
   //* Take userId and socketId from user and add to connected users Array
   socket.on('addUser', (userId) => {
     addUser(userId, socket.id);
@@ -93,7 +97,6 @@ io.on('connection', (socket) => {
   //* Emit a welcome message when connecting to the websocket
   // socket.emit('message', 'Welcome to the chat')
   // socket.broadcast.emit("message", "New user has joined");
-
 
 
   //* receive the submitted message

@@ -4814,6 +4814,52 @@ var createMessageElement = function createMessageElement(message, userId) {
 };
 
 exports.createMessageElement = createMessageElement;
+},{}],"onlineFriend.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.setOnlineFriends = void 0;
+// .chatOnline__friend
+//         .chatOnline__imgContainer
+//           img.chatOnline__img(src='/img/default.png' alt='user')
+//           .chatOnline__Badge
+//         span.chatOnline__Name Karim
+var onlineFriendsContainer = document.querySelector(".chatOnline");
+
+var createFriendBlock = function createFriendBlock(friend) {
+  var container = document.createElement('div');
+  var imgContainer = document.createElement('div');
+  var friendName = document.createElement('span');
+  var img = document.createElement('img');
+  var badge = document.createElement('div'); //* Set Class
+
+  container.className = "chatOnline__friend";
+  imgContainer.className = "chatOnline__imgContainer";
+  friendName.className = "chatOnline__Name";
+  img.className = "chatOnline__img";
+  badge.className = "chatOnline__Badge"; //* Set content
+
+  container.innerHTML = friend.name;
+  img.src = "/img/".concat(friend.photo);
+  badge.className = "chatOnline__Badge"; //* Append content
+
+  imgContainer.appendChild(img);
+  imgContainer.appendChild(badge);
+  container.appendChild(imgContainer);
+  container.appendChild(friendName);
+  return container;
+};
+
+var setOnlineFriends = function setOnlineFriends(onlineFriends) {
+  onlineFriendsContainer.innerHTML = "";
+  onlineFriends.forEach(function (friend) {
+    onlineFriendsContainer.appendChild(createFriendBlock(friend));
+  });
+};
+
+exports.setOnlineFriends = setOnlineFriends;
 },{}],"chat.js":[function(require,module,exports) {
 "use strict";
 
@@ -4827,6 +4873,8 @@ var _axios = _interopRequireDefault(require("axios"));
 var _alerts = require("./alerts");
 
 var _messageBlock = require("./messageBlock");
+
+var _onlineFriend = require("./onlineFriend");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4842,6 +4890,7 @@ var socket = io();
 var chatBox = document.querySelector(".chatBox__top");
 var inputField = document.querySelector(".chatBox__bottom .chatMessage__Input");
 var userId = undefined;
+var allFriends = undefined;
 
 if (inputField) {
   userId = inputField.dataset.userId; //* Sending userId to websocket
@@ -4850,11 +4899,82 @@ if (inputField) {
 } //* Socket.io
 
 
-socket.on("message", function (msg) {// console.log(msg);
-}); //* Get all Users
+socket.on("message", /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(msg) {
+    return _regeneratorRuntime().wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            console.log(msg);
 
-socket.on("getUsers", function (users) {// console.log(users)
-}); //* Receive sent messages
+          case 1:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee);
+  }));
+
+  return function (_x) {
+    return _ref.apply(this, arguments);
+  };
+}()); //* Get all Users
+
+socket.on("getUsers", /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(users) {
+    var onlineUsers, res;
+    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            users = users.filter(function (user) {
+              return user.userId !== userId;
+            }); //* Display online friends
+
+            if (allFriends) {
+              _context2.next = 9;
+              break;
+            }
+
+            _context2.next = 4;
+            return (0, _axios.default)({
+              method: "GET",
+              url: 'http://127.0.0.1:8080/api/users'
+            });
+
+          case 4:
+            res = _context2.sent;
+            allFriends = res.data.data.users;
+            onlineUsers = res.data.data.users.filter(function (user) {
+              return users.some(function (u) {
+                return user._id === u.userId;
+              });
+            });
+            _context2.next = 10;
+            break;
+
+          case 9:
+            onlineUsers = allFriends.filter(function (user) {
+              return users.some(function (u) {
+                return user._id === u.userId;
+              });
+            });
+
+          case 10:
+            if (onlineUsers) (0, _onlineFriend.setOnlineFriends)(onlineUsers);
+
+          case 11:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2);
+  }));
+
+  return function (_x2) {
+    return _ref2.apply(this, arguments);
+  };
+}()); //* Receive sent messages
 
 socket.on("sendBackMessage", function (msg) {
   if (inputField.dataset.conversationId === msg.conversationId) {
@@ -4889,11 +5009,11 @@ var getConversations = function getConversations(conversations, input) {
     var conversationId = item.dataset.conversationId;
     var receiverId = item.dataset.receiverId;
     item.addEventListener("click", /*#__PURE__*/function () {
-      var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(e) {
+      var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(e) {
         var res, data, userId, messages;
-        return _regeneratorRuntime().wrap(function _callee$(_context) {
+        return _regeneratorRuntime().wrap(function _callee3$(_context3) {
           while (1) {
-            switch (_context.prev = _context.next) {
+            switch (_context3.prev = _context3.next) {
               case 0:
                 input.dataset.conversationId = conversationId;
                 input.dataset.receiverId = receiverId;
@@ -4901,14 +5021,14 @@ var getConversations = function getConversations(conversations, input) {
                   return con.classList.remove("selected");
                 });
                 item.classList.add("selected");
-                _context.next = 6;
+                _context3.next = 6;
                 return (0, _axios.default)({
                   method: "GET",
                   url: "http://127.0.0.1:8080/api/messages/".concat(conversationId)
                 });
 
               case 6:
-                res = _context.sent;
+                res = _context3.sent;
                 data = res.data.data.messages;
                 userId = res.data.data.userId;
                 messages = data.map(function (msg) {
@@ -4922,14 +5042,14 @@ var getConversations = function getConversations(conversations, input) {
 
               case 13:
               case "end":
-                return _context.stop();
+                return _context3.stop();
             }
           }
-        }, _callee);
+        }, _callee3);
       }));
 
-      return function (_x) {
-        return _ref.apply(this, arguments);
+      return function (_x3) {
+        return _ref3.apply(this, arguments);
       };
     }());
   });
@@ -4939,11 +5059,11 @@ exports.getConversations = getConversations;
 
 var submitNewMessage = function submitNewMessage(input, button) {
   button.addEventListener("click", /*#__PURE__*/function () {
-    var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(e) {
+    var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(e) {
       var conversationId, receiverId, text, res, socketMessage, newMessage;
-      return _regeneratorRuntime().wrap(function _callee2$(_context2) {
+      return _regeneratorRuntime().wrap(function _callee4$(_context4) {
         while (1) {
-          switch (_context2.prev = _context2.next) {
+          switch (_context4.prev = _context4.next) {
             case 0:
               conversationId = input.dataset.conversationId;
               receiverId = input.dataset.receiverId;
@@ -4951,8 +5071,8 @@ var submitNewMessage = function submitNewMessage(input, button) {
               input.value = "";
               input.focus();
               e.target.classList.add("disabled");
-              _context2.prev = 6;
-              _context2.next = 9;
+              _context4.prev = 6;
+              _context4.next = 9;
               return (0, _axios.default)({
                 method: "POST",
                 url: "http://127.0.0.1:8080/api/messages",
@@ -4964,7 +5084,7 @@ var submitNewMessage = function submitNewMessage(input, button) {
               });
 
             case 9:
-              res = _context2.sent;
+              res = _context4.sent;
 
               if (res.data.status === "success") {
                 e.target.classList.remove("disabled");
@@ -4981,31 +5101,31 @@ var submitNewMessage = function submitNewMessage(input, button) {
                 autoScroll();
               }
 
-              _context2.next = 17;
+              _context4.next = 17;
               break;
 
             case 13:
-              _context2.prev = 13;
-              _context2.t0 = _context2["catch"](6);
+              _context4.prev = 13;
+              _context4.t0 = _context4["catch"](6);
               e.target.classList.remove("disabled");
               (0, _alerts.showAlert)("error", "Fail");
 
             case 17:
             case "end":
-              return _context2.stop();
+              return _context4.stop();
           }
         }
-      }, _callee2, null, [[6, 13]]);
+      }, _callee4, null, [[6, 13]]);
     }));
 
-    return function (_x2) {
-      return _ref2.apply(this, arguments);
+    return function (_x4) {
+      return _ref4.apply(this, arguments);
     };
   }());
 };
 
 exports.submitNewMessage = submitNewMessage;
-},{"axios":"../../node_modules/axios/index.js","./alerts":"alerts.js","./messageBlock":"messageBlock.js"}],"index.js":[function(require,module,exports) {
+},{"axios":"../../node_modules/axios/index.js","./alerts":"alerts.js","./messageBlock":"messageBlock.js","./onlineFriend":"onlineFriend.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 var _alerts = require("./alerts");
