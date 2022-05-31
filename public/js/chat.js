@@ -4,11 +4,12 @@ import { showAlert } from "./alerts";
 import { createMessageElement } from "./messageBlock";
 import { setOnlineFriends } from "./onlineFriend";
 
+const allFriendsContainer = document.querySelector(".friends");
 const chatBox = document.querySelector(".chatBox__top");
 const inputField = document.querySelector(".chatBox__bottom .chatMessage__Input");
 
-let userId = undefined
-let allFriends = undefined
+let userId = null
+let allFriends = null
 
 if (inputField) {
   userId = inputField.dataset.userId;
@@ -19,7 +20,15 @@ if (inputField) {
 
 //* Socket.io
 socket.on("message", async(msg) => {
-  console.log(msg);
+    const res = await axios({
+      method: "GET",
+      url: "http://127.0.0.1:8080/api/users",
+    });
+
+    const filteredFriends = res.data.data.users.filter(
+      (user) => user._id !== userId
+    );
+    getAllFriends(filteredFriends);
 });
 
 //* Get all Users
@@ -91,12 +100,12 @@ export const getConversations = (conversations, input) => {
 
       conversations.forEach((con) => con.classList.remove("selected"));
       item.classList.add("selected");
+
       const res = await axios({
         method: "GET",
         url: `http://127.0.0.1:8080/api/messages/${conversationId}`,
       });
       const data = res.data.data.messages;
-      const userId = res.data.data.userId;
       const messages = data.map((msg) => createMessageElement(msg, userId));
       chatBox.innerHTML = "";
       messages.forEach((msg) => chatBox.appendChild(msg));
@@ -105,11 +114,110 @@ export const getConversations = (conversations, input) => {
   });
 };
 
+export const getAllFriends = async (friends) => {
+  const res = await axios({
+    method: "GET",
+    url: `http://127.0.0.1:8080/api/conversations`,
+  });
+  const allConversations = res.data.data.conversations;
+  const createFriendWrapper = (friend) => {
+    const conversationContainer = document.createElement("div");
+    const img = document.createElement("img");
+    const friendName = document.createElement("span");
+
+    //* Set class
+    conversationContainer.className = "conversation";
+    img.className = "conversation__img";
+    friendName.className = "conversation__name";
+
+    img.src = `/img/${friend.photo}`;
+    friendName.innerHTML = friend.name
+
+    //* Set dataset
+    conversationContainer.dataset.receiverId = friend._id; 
+    allConversations.forEach(con => {
+      con.members.forEach((user) => {
+       if(user._id === friend._id)conversationContainer.dataset.conversationId = con._id; 
+      });
+    })
+
+    conversationContainer.appendChild(img);
+    conversationContainer.appendChild(friendName);
+   
+    //! Check later conversation select
+    allFriendsContainer.appendChild(conversationContainer);
+  }  
+  
+  allFriendsContainer.innerHTML = ''
+  friends.forEach((friend) => createFriendWrapper(friend));
+
+
+
+  //* Add event listener
+  allFriendsContainer.childNodes.forEach(item => {
+    item.addEventListener("click", async(e) => {
+      let target = e.target;
+      if (e.target.nodeName === "SPAN" || e.target.nodeName === "IMG")
+        target = e.target.parentNode;
+      allFriendsContainer.childNodes.forEach(d => d.classList.remove('selected'))
+      target.classList.add('selected')
+
+      const receiverId = target.dataset.receiverId;
+      const conversationId = target.dataset.conversationId;
+
+      inputField.dataset.conversationId = conversationId;
+      inputField.dataset.receiverId = receiverId;
+
+      if (conversationId) {
+        //* Continue conversation
+        const res = await axios({
+          method: "GET",
+          url: `http://127.0.0.1:8080/api/messages/${conversationId}`,
+        });
+        const data = res.data.data.messages;
+        const messages = data.map((msg) => createMessageElement(msg, userId));
+        chatBox.innerHTML = "";
+        messages.forEach((msg) => chatBox.appendChild(msg));
+        autoScroll();
+      } else {
+        //* Start new conversation
+        chatBox.innerHTML = `<div class="start_conversation">Send message to start a new conversation</div>"`;
+      }
+    });
+  })
+
+}
+
 export const submitNewMessage = (input, button) => {
   button.addEventListener("click", async (e) => {
-    const conversationId = input.dataset.conversationId;
-    const receiverId = input.dataset.receiverId;
+    let conversationId = input.dataset.conversationId;
+    let receiverId = input.dataset.receiverId;
 
+    if (conversationId === 'undefined') {
+      if (input.value === '') return
+      try {
+        const res = await axios({
+          method: "POST",
+          url: "http://127.0.0.1:8080/api/conversations",
+          data: {
+            senderId: userId,
+            receiverId,
+          },
+        });
+        if (res.data.status === "success") {
+          conversationId = res.data.data.conversation._id;
+          document.querySelector(
+            `[data-receiver-id='${receiverId}']`
+          ).dataset.conversationId = conversationId;
+          chatBox.innerHTML = "";
+        } else {
+          return;
+        }
+      } catch (err) {
+        showAlert("error", "Fail");
+        return;
+      }
+    }
     const text = input.value.trim();
     input.value = "";
     input.focus();

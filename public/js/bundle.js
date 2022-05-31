@@ -4841,7 +4841,7 @@ var createFriendBlock = function createFriendBlock(friend) {
   img.className = "chatOnline__img";
   badge.className = "chatOnline__Badge"; //* Set content
 
-  container.innerHTML = friend.name;
+  friendName.innerHTML = friend.name;
   img.src = "/img/".concat(friend.photo);
   badge.className = "chatOnline__Badge"; //* Append content
 
@@ -4866,7 +4866,7 @@ exports.setOnlineFriends = setOnlineFriends;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.submitNewMessage = exports.getConversations = exports.autoScroll = void 0;
+exports.submitNewMessage = exports.getConversations = exports.getAllFriends = exports.autoScroll = void 0;
 
 var _axios = _interopRequireDefault(require("axios"));
 
@@ -4887,10 +4887,11 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
 var socket = io();
+var allFriendsContainer = document.querySelector(".friends");
 var chatBox = document.querySelector(".chatBox__top");
 var inputField = document.querySelector(".chatBox__bottom .chatMessage__Input");
-var userId = undefined;
-var allFriends = undefined;
+var userId = null;
+var allFriends = null;
 
 if (inputField) {
   userId = inputField.dataset.userId; //* Sending userId to websocket
@@ -4901,13 +4902,25 @@ if (inputField) {
 
 socket.on("message", /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(msg) {
+    var res, filteredFriends;
     return _regeneratorRuntime().wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            console.log(msg);
+            _context.next = 2;
+            return (0, _axios.default)({
+              method: "GET",
+              url: "http://127.0.0.1:8080/api/users"
+            });
 
-          case 1:
+          case 2:
+            res = _context.sent;
+            filteredFriends = res.data.data.users.filter(function (user) {
+              return user._id !== userId;
+            });
+            getAllFriends(filteredFriends);
+
+          case 5:
           case "end":
             return _context.stop();
         }
@@ -5010,7 +5023,7 @@ var getConversations = function getConversations(conversations, input) {
     var receiverId = item.dataset.receiverId;
     item.addEventListener("click", /*#__PURE__*/function () {
       var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(e) {
-        var res, data, userId, messages;
+        var res, data, messages;
         return _regeneratorRuntime().wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
@@ -5030,7 +5043,6 @@ var getConversations = function getConversations(conversations, input) {
               case 6:
                 res = _context3.sent;
                 data = res.data.data.messages;
-                userId = res.data.data.userId;
                 messages = data.map(function (msg) {
                   return (0, _messageBlock.createMessageElement)(msg, userId);
                 });
@@ -5040,7 +5052,7 @@ var getConversations = function getConversations(conversations, input) {
                 });
                 autoScroll();
 
-              case 13:
+              case 12:
               case "end":
                 return _context3.stop();
             }
@@ -5057,22 +5069,199 @@ var getConversations = function getConversations(conversations, input) {
 
 exports.getConversations = getConversations;
 
+var getAllFriends = /*#__PURE__*/function () {
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(friends) {
+    var res, allConversations, createFriendWrapper;
+    return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            _context5.next = 2;
+            return (0, _axios.default)({
+              method: "GET",
+              url: "http://127.0.0.1:8080/api/conversations"
+            });
+
+          case 2:
+            res = _context5.sent;
+            allConversations = res.data.data.conversations;
+
+            createFriendWrapper = function createFriendWrapper(friend) {
+              var conversationContainer = document.createElement("div");
+              var img = document.createElement("img");
+              var friendName = document.createElement("span"); //* Set class
+
+              conversationContainer.className = "conversation";
+              img.className = "conversation__img";
+              friendName.className = "conversation__name";
+              img.src = "/img/".concat(friend.photo);
+              friendName.innerHTML = friend.name; //* Set dataset
+
+              conversationContainer.dataset.receiverId = friend._id;
+              allConversations.forEach(function (con) {
+                con.members.forEach(function (user) {
+                  if (user._id === friend._id) conversationContainer.dataset.conversationId = con._id;
+                });
+              });
+              conversationContainer.appendChild(img);
+              conversationContainer.appendChild(friendName); //! Check later conversation select
+
+              allFriendsContainer.appendChild(conversationContainer);
+            };
+
+            allFriendsContainer.innerHTML = '';
+            friends.forEach(function (friend) {
+              return createFriendWrapper(friend);
+            }); //* Add event listener
+
+            allFriendsContainer.childNodes.forEach(function (item) {
+              item.addEventListener("click", /*#__PURE__*/function () {
+                var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(e) {
+                  var target, receiverId, conversationId, _res, data, messages;
+
+                  return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+                    while (1) {
+                      switch (_context4.prev = _context4.next) {
+                        case 0:
+                          target = e.target;
+                          if (e.target.nodeName === "SPAN" || e.target.nodeName === "IMG") target = e.target.parentNode;
+                          allFriendsContainer.childNodes.forEach(function (d) {
+                            return d.classList.remove('selected');
+                          });
+                          target.classList.add('selected');
+                          receiverId = target.dataset.receiverId;
+                          conversationId = target.dataset.conversationId;
+                          inputField.dataset.conversationId = conversationId;
+                          inputField.dataset.receiverId = receiverId;
+
+                          if (!conversationId) {
+                            _context4.next = 19;
+                            break;
+                          }
+
+                          _context4.next = 11;
+                          return (0, _axios.default)({
+                            method: "GET",
+                            url: "http://127.0.0.1:8080/api/messages/".concat(conversationId)
+                          });
+
+                        case 11:
+                          _res = _context4.sent;
+                          data = _res.data.data.messages;
+                          messages = data.map(function (msg) {
+                            return (0, _messageBlock.createMessageElement)(msg, userId);
+                          });
+                          chatBox.innerHTML = "";
+                          messages.forEach(function (msg) {
+                            return chatBox.appendChild(msg);
+                          });
+                          autoScroll();
+                          _context4.next = 20;
+                          break;
+
+                        case 19:
+                          //* Start new conversation
+                          chatBox.innerHTML = "<div class=\"start_conversation\">Send message to start a new conversation</div>\"";
+
+                        case 20:
+                        case "end":
+                          return _context4.stop();
+                      }
+                    }
+                  }, _callee4);
+                }));
+
+                return function (_x5) {
+                  return _ref5.apply(this, arguments);
+                };
+              }());
+            });
+
+          case 8:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee5);
+  }));
+
+  return function getAllFriends(_x4) {
+    return _ref4.apply(this, arguments);
+  };
+}();
+
+exports.getAllFriends = getAllFriends;
+
 var submitNewMessage = function submitNewMessage(input, button) {
   button.addEventListener("click", /*#__PURE__*/function () {
-    var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(e) {
-      var conversationId, receiverId, text, res, socketMessage, newMessage;
-      return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+    var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6(e) {
+      var conversationId, receiverId, res, text, _res2, socketMessage, newMessage;
+
+      return _regeneratorRuntime().wrap(function _callee6$(_context6) {
         while (1) {
-          switch (_context4.prev = _context4.next) {
+          switch (_context6.prev = _context6.next) {
             case 0:
               conversationId = input.dataset.conversationId;
               receiverId = input.dataset.receiverId;
+
+              if (!(conversationId === 'undefined')) {
+                _context6.next = 22;
+                break;
+              }
+
+              if (!(input.value === '')) {
+                _context6.next = 5;
+                break;
+              }
+
+              return _context6.abrupt("return");
+
+            case 5:
+              _context6.prev = 5;
+              _context6.next = 8;
+              return (0, _axios.default)({
+                method: "POST",
+                url: "http://127.0.0.1:8080/api/conversations",
+                data: {
+                  senderId: userId,
+                  receiverId: receiverId
+                }
+              });
+
+            case 8:
+              res = _context6.sent;
+
+              if (!(res.data.status === "success")) {
+                _context6.next = 15;
+                break;
+              }
+
+              conversationId = res.data.data.conversation._id;
+              document.querySelector("[data-receiver-id='".concat(receiverId, "']")).dataset.conversationId = conversationId;
+              chatBox.innerHTML = "";
+              _context6.next = 16;
+              break;
+
+            case 15:
+              return _context6.abrupt("return");
+
+            case 16:
+              _context6.next = 22;
+              break;
+
+            case 18:
+              _context6.prev = 18;
+              _context6.t0 = _context6["catch"](5);
+              (0, _alerts.showAlert)("error", "Fail");
+              return _context6.abrupt("return");
+
+            case 22:
               text = input.value.trim();
               input.value = "";
               input.focus();
               e.target.classList.add("disabled");
-              _context4.prev = 6;
-              _context4.next = 9;
+              _context6.prev = 26;
+              _context6.next = 29;
               return (0, _axios.default)({
                 method: "POST",
                 url: "http://127.0.0.1:8080/api/messages",
@@ -5083,43 +5272,43 @@ var submitNewMessage = function submitNewMessage(input, button) {
                 }
               });
 
-            case 9:
-              res = _context4.sent;
+            case 29:
+              _res2 = _context6.sent;
 
-              if (res.data.status === "success") {
+              if (_res2.data.status === "success") {
                 e.target.classList.remove("disabled");
                 socketMessage = {
-                  message: res.data.data.message,
+                  message: _res2.data.data.message,
                   receiverId: receiverId
                 }; // * Send the message to the other client
 
                 socket.emit("submitMessage", socketMessage, function (ackMes) {//! Use it to confirm the delivery
                   // console.log(`the message has been ${ackMes}`);
                 });
-                newMessage = (0, _messageBlock.createMessageElement)(res.data.data.message, userId);
+                newMessage = (0, _messageBlock.createMessageElement)(_res2.data.data.message, userId);
                 chatBox.appendChild(newMessage);
                 autoScroll();
               }
 
-              _context4.next = 17;
+              _context6.next = 37;
               break;
 
-            case 13:
-              _context4.prev = 13;
-              _context4.t0 = _context4["catch"](6);
+            case 33:
+              _context6.prev = 33;
+              _context6.t1 = _context6["catch"](26);
               e.target.classList.remove("disabled");
               (0, _alerts.showAlert)("error", "Fail");
 
-            case 17:
+            case 37:
             case "end":
-              return _context4.stop();
+              return _context6.stop();
           }
         }
-      }, _callee4, null, [[6, 13]]);
+      }, _callee6, null, [[5, 18], [26, 33]]);
     }));
 
-    return function (_x4) {
-      return _ref4.apply(this, arguments);
+    return function (_x6) {
+      return _ref6.apply(this, arguments);
     };
   }());
 };
@@ -5143,7 +5332,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var loginForm = document.querySelector(".form--login");
 var signupForm = document.querySelector(".form--signup");
 var logOutBtn = document.querySelector(".nav__el--logout");
-var conversations = document.querySelectorAll(".conversation");
+var conversations = document.querySelectorAll(".conversations .conversation");
 var chatBox = document.querySelector(".chatBox__top");
 var newMessageInput = document.querySelector(".chatBox__bottom .chatMessage__Input");
 var newMessageButton = document.querySelector(".chatBox__bottom .chatSubmit__button"); // Code

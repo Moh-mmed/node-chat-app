@@ -20,7 +20,7 @@ const createFriendBlock = (friend) => {
     badge.className = "chatOnline__Badge";
 
     //* Set content
-    container.innerHTML = friend.name;
+    friendName.innerHTML = friend.name;
     img.src = `/img/${friend.photo}`;
     badge.className = "chatOnline__Badge";
 
