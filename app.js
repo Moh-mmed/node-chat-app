@@ -2,7 +2,6 @@ const path = require('path');
 const http = require('http')
 const express = require('express');
 const socketio = require('socket.io')
-const morgan = require("morgan");
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const cookieParser = require('cookie-parser');
@@ -32,10 +31,6 @@ app.use(cors());
 
 app.options('*', cors());
 
-//* Development logging
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
 //* Body parser, reading data from body into req.body
 app.use(express.json());
 // app.use(express.urlencoded({ extended: true, limit: '10kb' }));
