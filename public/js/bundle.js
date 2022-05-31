@@ -4768,7 +4768,391 @@ var signup = /*#__PURE__*/function () {
 
 var _default = signup;
 exports.default = _default;
-},{"axios":"../../node_modules/axios/index.js","./alerts":"alerts.js"}],"messageBlock.js":[function(require,module,exports) {
+},{"axios":"../../node_modules/axios/index.js","./alerts":"alerts.js"}],"../../node_modules/timeago.js/esm/lang/en_US.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = _default;
+var EN_US = ['second', 'minute', 'hour', 'day', 'week', 'month', 'year'];
+
+function _default(diff, idx) {
+  if (idx === 0) return ['just now', 'right now'];
+  var unit = EN_US[Math.floor(idx / 2)];
+  if (diff > 1) unit += 's';
+  return [diff + " " + unit + " ago", "in " + diff + " " + unit];
+}
+},{}],"../../node_modules/timeago.js/esm/lang/zh_CN.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = _default;
+var ZH_CN = ['秒', '分钟', '小时', '天', '周', '个月', '年'];
+
+function _default(diff, idx) {
+  if (idx === 0) return ['刚刚', '片刻后'];
+  var unit = ZH_CN[~~(idx / 2)];
+  return [diff + " " + unit + "\u524D", diff + " " + unit + "\u540E"];
+}
+},{}],"../../node_modules/timeago.js/esm/register.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.register = exports.getLocale = void 0;
+
+/**
+ * Created by hustcc on 18/5/20.
+ * Contract: i@hust.cc
+ */
+
+/**
+ * All supported locales
+ */
+var Locales = {};
+/**
+ * register a locale
+ * @param locale
+ * @param func
+ */
+
+var register = function (locale, func) {
+  Locales[locale] = func;
+};
+/**
+ * get a locale, default is en_US
+ * @param locale
+ * @returns {*}
+ */
+
+
+exports.register = register;
+
+var getLocale = function (locale) {
+  return Locales[locale] || Locales['en_US'];
+};
+
+exports.getLocale = getLocale;
+},{}],"../../node_modules/timeago.js/esm/utils/date.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.diffSec = diffSec;
+exports.formatDiff = formatDiff;
+exports.nextInterval = nextInterval;
+exports.toDate = toDate;
+
+/**
+ * Created by hustcc on 18/5/20.
+ * Contract: i@hust.cc
+ */
+var SEC_ARRAY = [60, 60, 24, 7, 365 / 7 / 12, 12];
+/**
+ * format Date / string / timestamp to timestamp
+ * @param input
+ * @returns {*}
+ */
+
+function toDate(input) {
+  if (input instanceof Date) return input; // @ts-ignore
+
+  if (!isNaN(input) || /^\d+$/.test(input)) return new Date(parseInt(input));
+  input = (input || '' // @ts-ignore
+  ).trim().replace(/\.\d+/, '') // remove milliseconds
+  .replace(/-/, '/').replace(/-/, '/').replace(/(\d)T(\d)/, '$1 $2').replace(/Z/, ' UTC') // 2017-2-5T3:57:52Z -> 2017-2-5 3:57:52UTC
+  .replace(/([+-]\d\d):?(\d\d)/, ' $1$2'); // -04:00 -> -0400
+
+  return new Date(input);
+}
+/**
+ * format the diff second to *** time ago, with setting locale
+ * @param diff
+ * @param localeFunc
+ * @returns
+ */
+
+
+function formatDiff(diff, localeFunc) {
+  /**
+   * if locale is not exist, use defaultLocale.
+   * if defaultLocale is not exist, use build-in `en`.
+   * be sure of no error when locale is not exist.
+   *
+   * If `time in`, then 1
+   * If `time ago`, then 0
+   */
+  var agoIn = diff < 0 ? 1 : 0;
+  /**
+   * Get absolute value of number (|diff| is non-negative) value of x
+   * |diff| = diff if diff is positive
+   * |diff| = -diff if diff is negative
+   * |0| = 0
+   */
+
+  diff = Math.abs(diff);
+  /**
+   * Time in seconds
+   */
+
+  var totalSec = diff;
+  /**
+   * Unit of time
+   */
+
+  var idx = 0;
+
+  for (; diff >= SEC_ARRAY[idx] && idx < SEC_ARRAY.length; idx++) {
+    diff /= SEC_ARRAY[idx];
+  }
+  /**
+   * Math.floor() is alternative of ~~
+   *
+   * The differences and bugs:
+   * Math.floor(3.7) -> 4 but ~~3.7 -> 3
+   * Math.floor(1559125440000.6) -> 1559125440000 but ~~1559125440000.6 -> 52311552
+   *
+   * More information about the performance of algebraic:
+   * https://www.youtube.com/watch?v=65-RbBwZQdU
+   */
+
+
+  diff = Math.floor(diff);
+  idx *= 2;
+  if (diff > (idx === 0 ? 9 : 1)) idx += 1;
+  return localeFunc(diff, idx, totalSec)[agoIn].replace('%s', diff.toString());
+}
+/**
+ * calculate the diff second between date to be formatted an now date.
+ * @param date
+ * @param relativeDate
+ * @returns {number}
+ */
+
+
+function diffSec(date, relativeDate) {
+  var relDate = relativeDate ? toDate(relativeDate) : new Date();
+  return (+relDate - +toDate(date)) / 1000;
+}
+/**
+ * nextInterval: calculate the next interval time.
+ * - diff: the diff sec between now and date to be formatted.
+ *
+ * What's the meaning?
+ * diff = 61 then return 59
+ * diff = 3601 (an hour + 1 second), then return 3599
+ * make the interval with high performance.
+ **/
+
+
+function nextInterval(diff) {
+  var rst = 1,
+      i = 0,
+      d = Math.abs(diff);
+
+  for (; diff >= SEC_ARRAY[i] && i < SEC_ARRAY.length; i++) {
+    diff /= SEC_ARRAY[i];
+    rst *= SEC_ARRAY[i];
+  }
+
+  d = d % rst;
+  d = d ? rst - d : rst;
+  return Math.ceil(d);
+}
+},{}],"../../node_modules/timeago.js/esm/format.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.format = void 0;
+
+var _date = require("./utils/date");
+
+var _register = require("./register");
+
+/**
+ * format a TDate into string
+ * @param date
+ * @param locale
+ * @param opts
+ */
+var format = function (date, locale, opts) {
+  // diff seconds
+  var sec = (0, _date.diffSec)(date, opts && opts.relativeDate); // format it with locale
+
+  return (0, _date.formatDiff)(sec, (0, _register.getLocale)(locale));
+};
+
+exports.format = format;
+},{"./utils/date":"../../node_modules/timeago.js/esm/utils/date.js","./register":"../../node_modules/timeago.js/esm/register.js"}],"../../node_modules/timeago.js/esm/utils/dom.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getDateAttribute = getDateAttribute;
+exports.getTimerId = getTimerId;
+exports.setTimerId = setTimerId;
+var ATTR_TIMEAGO_TID = 'timeago-id';
+/**
+ * get the datetime attribute, `datetime` are supported.
+ * @param node
+ * @returns {*}
+ */
+
+function getDateAttribute(node) {
+  return node.getAttribute('datetime');
+}
+/**
+ * set the node attribute, native DOM
+ * @param node
+ * @param timerId
+ * @returns {*}
+ */
+
+
+function setTimerId(node, timerId) {
+  // @ts-ignore
+  node.setAttribute(ATTR_TIMEAGO_TID, timerId);
+}
+/**
+ * get the timer id
+ * @param node
+ */
+
+
+function getTimerId(node) {
+  return parseInt(node.getAttribute(ATTR_TIMEAGO_TID));
+}
+},{}],"../../node_modules/timeago.js/esm/realtime.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.cancel = cancel;
+exports.render = render;
+
+var _dom = require("./utils/dom");
+
+var _date = require("./utils/date");
+
+var _register = require("./register");
+
+// all realtime timer
+var TIMER_POOL = {};
+/**
+ * clear a timer from pool
+ * @param tid
+ */
+
+var clear = function (tid) {
+  clearTimeout(tid);
+  delete TIMER_POOL[tid];
+}; // run with timer(setTimeout)
+
+
+function run(node, date, localeFunc, opts) {
+  // clear the node's exist timer
+  clear((0, _dom.getTimerId)(node));
+  var relativeDate = opts.relativeDate,
+      minInterval = opts.minInterval; // get diff seconds
+
+  var diff = (0, _date.diffSec)(date, relativeDate); // render
+
+  node.innerText = (0, _date.formatDiff)(diff, localeFunc);
+  var tid = setTimeout(function () {
+    run(node, date, localeFunc, opts);
+  }, Math.min(Math.max((0, _date.nextInterval)(diff), minInterval || 1) * 1000, 0x7fffffff)); // there is no need to save node in object. Just save the key
+
+  TIMER_POOL[tid] = 0;
+  (0, _dom.setTimerId)(node, tid);
+}
+/**
+ * cancel a timer or all timers
+ * @param node - node hosting the time string
+ */
+
+
+function cancel(node) {
+  // cancel one
+  if (node) clear((0, _dom.getTimerId)(node)); // cancel all
+  // @ts-ignore
+  else Object.keys(TIMER_POOL).forEach(clear);
+}
+/**
+ * render a dom realtime
+ * @param nodes
+ * @param locale
+ * @param opts
+ */
+
+
+function render(nodes, locale, opts) {
+  // by .length
+  // @ts-ignore
+  var nodeList = nodes.length ? nodes : [nodes];
+  nodeList.forEach(function (node) {
+    run(node, (0, _dom.getDateAttribute)(node), (0, _register.getLocale)(locale), opts || {});
+  });
+  return nodeList;
+}
+},{"./utils/dom":"../../node_modules/timeago.js/esm/utils/dom.js","./utils/date":"../../node_modules/timeago.js/esm/utils/date.js","./register":"../../node_modules/timeago.js/esm/register.js"}],"../../node_modules/timeago.js/esm/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+Object.defineProperty(exports, "cancel", {
+  enumerable: true,
+  get: function () {
+    return _realtime.cancel;
+  }
+});
+Object.defineProperty(exports, "format", {
+  enumerable: true,
+  get: function () {
+    return _format.format;
+  }
+});
+Object.defineProperty(exports, "register", {
+  enumerable: true,
+  get: function () {
+    return _register.register;
+  }
+});
+Object.defineProperty(exports, "render", {
+  enumerable: true,
+  get: function () {
+    return _realtime.render;
+  }
+});
+
+var _en_US = _interopRequireDefault(require("./lang/en_US"));
+
+var _zh_CN = _interopRequireDefault(require("./lang/zh_CN"));
+
+var _register = require("./register");
+
+var _format = require("./format");
+
+var _realtime = require("./realtime");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Created by hustcc on 18/5/20.
+ * Contract: i@hust.cc
+ */
+(0, _register.register)('en_US', _en_US.default);
+(0, _register.register)('zh_CN', _zh_CN.default);
+},{"./lang/en_US":"../../node_modules/timeago.js/esm/lang/en_US.js","./lang/zh_CN":"../../node_modules/timeago.js/esm/lang/zh_CN.js","./register":"../../node_modules/timeago.js/esm/register.js","./format":"../../node_modules/timeago.js/esm/format.js","./realtime":"../../node_modules/timeago.js/esm/realtime.js"}],"messageBlock.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4776,19 +5160,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.createMessageElement = void 0;
 
-var getAppropriateDate = function getAppropriateDate(prevMsgDate, currMsgDate) {
-  var messageDate = document.createElement("div");
-  messageDate.className = "message__date";
-  messageDate.innerHTML = "SUN AT 20:22";
-  var displayedDate = "SUN AT 20:22"; // compare currMsg time with the previous one
+var _timeago = require("timeago.js");
 
-  prevMsgDate = new Date(prevMsgDate);
-  currMsgDate = new Date(currMsgDate);
-  var diffTime = Math.abs(currMsgDate - prevMsgDate);
-  var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // console.log(diffTime + " milliseconds");
-  // console.log(diffDays + " days");
-  // return null
-
+// import * as timeago from "timeago.js";
+var getAppropriateDate = function getAppropriateDate(time) {
+  var messageDate = time;
   return messageDate;
 };
 
@@ -4798,23 +5174,23 @@ var createMessageElement = function createMessageElement(message, userId) {
   var img = document.createElement("img");
   var messageText = document.createElement("p");
   var messageBottom = document.createElement("div");
-  var messageDate = getAppropriateDate(message.createdAt, message.createdAt);
   messageWrapper.className = "message ".concat(message.sender._id === userId ? "own" : "");
   messageTop.className = "message__top";
   img.src = "/img/".concat(message.sender.photo);
   img.className = "message__img";
-  messageText.className = "message__text"; // messageBottom.className = "message__bottom";
-
-  if (messageDate) messageWrapper.appendChild(messageDate);
+  messageText.className = "message__text";
+  messageBottom.className = "message__bottom";
+  messageBottom.innerHTML = (0, _timeago.format)(message.createdAt);
   messageText.innerHTML = message.text;
   messageTop.appendChild(img);
   messageTop.appendChild(messageText);
   messageWrapper.appendChild(messageTop);
+  messageWrapper.appendChild(messageBottom);
   return messageWrapper;
 };
 
 exports.createMessageElement = createMessageElement;
-},{}],"onlineFriend.js":[function(require,module,exports) {
+},{"timeago.js":"../../node_modules/timeago.js/esm/index.js"}],"onlineFriend.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4997,6 +5373,50 @@ socket.on("sendBackMessage", function (msg) {
   }
 });
 
+var removeAllSelectedClass = function removeAllSelectedClass() {
+  document.querySelectorAll('.conversation').forEach(function (con) {
+    return con.classList.remove("selected");
+  });
+};
+
+var getMessages = /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(conversationId) {
+    var res, data, messages;
+    return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            _context3.next = 2;
+            return (0, _axios.default)({
+              method: "GET",
+              url: "http://127.0.0.1:8080/api/messages/".concat(conversationId)
+            });
+
+          case 2:
+            res = _context3.sent;
+            data = res.data.data.messages;
+            messages = data.map(function (msg) {
+              return (0, _messageBlock.createMessageElement)(msg, userId);
+            });
+            chatBox.innerHTML = "";
+            messages.forEach(function (msg) {
+              return chatBox.appendChild(msg);
+            });
+            autoScroll();
+
+          case 8:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3);
+  }));
+
+  return function getMessages(_x3) {
+    return _ref3.apply(this, arguments);
+  };
+}();
+
 var autoScroll = function autoScroll() {
   chatBox.scrollTop = chatBox.scrollHeight; // // New message element 
   // const newMessageEl = chatBox.lastElementChild
@@ -5017,51 +5437,32 @@ var autoScroll = function autoScroll() {
 
 exports.autoScroll = autoScroll;
 
-var getConversations = function getConversations(conversations, input) {
+var getConversations = function getConversations(conversations) {
   conversations.forEach(function (item) {
     var conversationId = item.dataset.conversationId;
     var receiverId = item.dataset.receiverId;
     item.addEventListener("click", /*#__PURE__*/function () {
-      var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3(e) {
-        var res, data, messages;
-        return _regeneratorRuntime().wrap(function _callee3$(_context3) {
+      var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(e) {
+        return _regeneratorRuntime().wrap(function _callee4$(_context4) {
           while (1) {
-            switch (_context3.prev = _context3.next) {
+            switch (_context4.prev = _context4.next) {
               case 0:
-                input.dataset.conversationId = conversationId;
-                input.dataset.receiverId = receiverId;
-                conversations.forEach(function (con) {
-                  return con.classList.remove("selected");
-                });
+                inputField.dataset.conversationId = conversationId;
+                inputField.dataset.receiverId = receiverId;
+                removeAllSelectedClass();
                 item.classList.add("selected");
-                _context3.next = 6;
-                return (0, _axios.default)({
-                  method: "GET",
-                  url: "http://127.0.0.1:8080/api/messages/".concat(conversationId)
-                });
+                getMessages(conversationId);
 
-              case 6:
-                res = _context3.sent;
-                data = res.data.data.messages;
-                messages = data.map(function (msg) {
-                  return (0, _messageBlock.createMessageElement)(msg, userId);
-                });
-                chatBox.innerHTML = "";
-                messages.forEach(function (msg) {
-                  return chatBox.appendChild(msg);
-                });
-                autoScroll();
-
-              case 12:
+              case 5:
               case "end":
-                return _context3.stop();
+                return _context4.stop();
             }
           }
-        }, _callee3);
+        }, _callee4);
       }));
 
-      return function (_x3) {
-        return _ref3.apply(this, arguments);
+      return function (_x4) {
+        return _ref4.apply(this, arguments);
       };
     }());
   });
@@ -5070,20 +5471,20 @@ var getConversations = function getConversations(conversations, input) {
 exports.getConversations = getConversations;
 
 var getAllFriends = /*#__PURE__*/function () {
-  var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(friends) {
+  var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6(friends) {
     var res, allConversations, createFriendWrapper;
-    return _regeneratorRuntime().wrap(function _callee5$(_context5) {
+    return _regeneratorRuntime().wrap(function _callee6$(_context6) {
       while (1) {
-        switch (_context5.prev = _context5.next) {
+        switch (_context6.prev = _context6.next) {
           case 0:
-            _context5.next = 2;
+            _context6.next = 2;
             return (0, _axios.default)({
               method: "GET",
               url: "http://127.0.0.1:8080/api/conversations"
             });
 
           case 2:
-            res = _context5.sent;
+            res = _context6.sent;
             allConversations = res.data.data.conversations;
 
             createFriendWrapper = function createFriendWrapper(friend) {
@@ -5116,109 +5517,84 @@ var getAllFriends = /*#__PURE__*/function () {
 
             allFriendsContainer.childNodes.forEach(function (item) {
               item.addEventListener("click", /*#__PURE__*/function () {
-                var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4(e) {
-                  var target, receiverId, conversationId, _res, data, messages;
-
-                  return _regeneratorRuntime().wrap(function _callee4$(_context4) {
+                var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee5(e) {
+                  var target, receiverId, conversationId;
+                  return _regeneratorRuntime().wrap(function _callee5$(_context5) {
                     while (1) {
-                      switch (_context4.prev = _context4.next) {
+                      switch (_context5.prev = _context5.next) {
                         case 0:
                           target = e.target;
                           if (e.target.nodeName === "SPAN" || e.target.nodeName === "IMG") target = e.target.parentNode;
-                          allFriendsContainer.childNodes.forEach(function (d) {
-                            return d.classList.remove('selected');
-                          });
+                          removeAllSelectedClass();
                           target.classList.add('selected');
                           receiverId = target.dataset.receiverId;
                           conversationId = target.dataset.conversationId;
                           inputField.dataset.conversationId = conversationId;
                           inputField.dataset.receiverId = receiverId;
 
-                          if (!conversationId) {
-                            _context4.next = 19;
-                            break;
+                          if (conversationId) {
+                            getMessages(conversationId);
+                          } else {
+                            //* Start new conversation
+                            chatBox.innerHTML = "<div class=\"start_conversation\">Send message to start a new conversation</div>\"";
                           }
 
-                          _context4.next = 11;
-                          return (0, _axios.default)({
-                            method: "GET",
-                            url: "http://127.0.0.1:8080/api/messages/".concat(conversationId)
-                          });
-
-                        case 11:
-                          _res = _context4.sent;
-                          data = _res.data.data.messages;
-                          messages = data.map(function (msg) {
-                            return (0, _messageBlock.createMessageElement)(msg, userId);
-                          });
-                          chatBox.innerHTML = "";
-                          messages.forEach(function (msg) {
-                            return chatBox.appendChild(msg);
-                          });
-                          autoScroll();
-                          _context4.next = 20;
-                          break;
-
-                        case 19:
-                          //* Start new conversation
-                          chatBox.innerHTML = "<div class=\"start_conversation\">Send message to start a new conversation</div>\"";
-
-                        case 20:
+                        case 9:
                         case "end":
-                          return _context4.stop();
+                          return _context5.stop();
                       }
                     }
-                  }, _callee4);
+                  }, _callee5);
                 }));
 
-                return function (_x5) {
-                  return _ref5.apply(this, arguments);
+                return function (_x6) {
+                  return _ref6.apply(this, arguments);
                 };
               }());
             });
 
           case 8:
           case "end":
-            return _context5.stop();
+            return _context6.stop();
         }
       }
-    }, _callee5);
+    }, _callee6);
   }));
 
-  return function getAllFriends(_x4) {
-    return _ref4.apply(this, arguments);
+  return function getAllFriends(_x5) {
+    return _ref5.apply(this, arguments);
   };
 }();
 
 exports.getAllFriends = getAllFriends;
 
-var submitNewMessage = function submitNewMessage(input, button) {
+var submitNewMessage = function submitNewMessage(button) {
   button.addEventListener("click", /*#__PURE__*/function () {
-    var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee6(e) {
-      var conversationId, receiverId, res, text, _res2, socketMessage, newMessage;
+    var _ref7 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee7(e) {
+      var conversationId, receiverId, res, text, _res, socketMessage, newMessage;
 
-      return _regeneratorRuntime().wrap(function _callee6$(_context6) {
+      return _regeneratorRuntime().wrap(function _callee7$(_context7) {
         while (1) {
-          switch (_context6.prev = _context6.next) {
+          switch (_context7.prev = _context7.next) {
             case 0:
-              conversationId = input.dataset.conversationId;
-              receiverId = input.dataset.receiverId;
+              conversationId = inputField.dataset.conversationId;
+              receiverId = inputField.dataset.receiverId;
 
               if (!(conversationId === 'undefined')) {
-                _context6.next = 22;
+                _context7.next = 22;
                 break;
               }
 
-              if (!(input.value === '')) {
-                _context6.next = 5;
+              if (!(inputField.value === '')) {
+                _context7.next = 5;
                 break;
               }
 
-              return _context6.abrupt("return");
+              return _context7.abrupt("return");
 
             case 5:
-              _context6.prev = 5;
-              _context6.next = 8;
+              _context7.prev = 5;
+              _context7.next = 8;
               return (0, _axios.default)({
                 method: "POST",
                 url: "http://127.0.0.1:8080/api/conversations",
@@ -5229,39 +5605,39 @@ var submitNewMessage = function submitNewMessage(input, button) {
               });
 
             case 8:
-              res = _context6.sent;
+              res = _context7.sent;
 
               if (!(res.data.status === "success")) {
-                _context6.next = 15;
+                _context7.next = 15;
                 break;
               }
 
               conversationId = res.data.data.conversation._id;
               document.querySelector("[data-receiver-id='".concat(receiverId, "']")).dataset.conversationId = conversationId;
               chatBox.innerHTML = "";
-              _context6.next = 16;
+              _context7.next = 16;
               break;
 
             case 15:
-              return _context6.abrupt("return");
+              return _context7.abrupt("return");
 
             case 16:
-              _context6.next = 22;
+              _context7.next = 22;
               break;
 
             case 18:
-              _context6.prev = 18;
-              _context6.t0 = _context6["catch"](5);
+              _context7.prev = 18;
+              _context7.t0 = _context7["catch"](5);
               (0, _alerts.showAlert)("error", "Fail");
-              return _context6.abrupt("return");
+              return _context7.abrupt("return");
 
             case 22:
-              text = input.value.trim();
-              input.value = "";
-              input.focus();
+              text = inputField.value.trim();
+              inputField.value = "";
+              inputField.focus();
               e.target.classList.add("disabled");
-              _context6.prev = 26;
-              _context6.next = 29;
+              _context7.prev = 26;
+              _context7.next = 29;
               return (0, _axios.default)({
                 method: "POST",
                 url: "http://127.0.0.1:8080/api/messages",
@@ -5273,42 +5649,42 @@ var submitNewMessage = function submitNewMessage(input, button) {
               });
 
             case 29:
-              _res2 = _context6.sent;
+              _res = _context7.sent;
 
-              if (_res2.data.status === "success") {
+              if (_res.data.status === "success") {
                 e.target.classList.remove("disabled");
                 socketMessage = {
-                  message: _res2.data.data.message,
+                  message: _res.data.data.message,
                   receiverId: receiverId
                 }; // * Send the message to the other client
 
                 socket.emit("submitMessage", socketMessage, function (ackMes) {//! Use it to confirm the delivery
                   // console.log(`the message has been ${ackMes}`);
                 });
-                newMessage = (0, _messageBlock.createMessageElement)(_res2.data.data.message, userId);
+                newMessage = (0, _messageBlock.createMessageElement)(_res.data.data.message, userId);
                 chatBox.appendChild(newMessage);
                 autoScroll();
               }
 
-              _context6.next = 37;
+              _context7.next = 37;
               break;
 
             case 33:
-              _context6.prev = 33;
-              _context6.t1 = _context6["catch"](26);
+              _context7.prev = 33;
+              _context7.t1 = _context7["catch"](26);
               e.target.classList.remove("disabled");
               (0, _alerts.showAlert)("error", "Fail");
 
             case 37:
             case "end":
-              return _context6.stop();
+              return _context7.stop();
           }
         }
-      }, _callee6, null, [[5, 18], [26, 33]]);
+      }, _callee7, null, [[5, 18], [26, 33]]);
     }));
 
-    return function (_x6) {
-      return _ref6.apply(this, arguments);
+    return function (_x7) {
+      return _ref7.apply(this, arguments);
     };
   }());
 };
@@ -5340,8 +5716,8 @@ var newMessageButton = document.querySelector(".chatBox__bottom .chatSubmit__but
 if (loginForm) loginForm.addEventListener("submit", _login.login);
 if (signupForm) signupForm.addEventListener("submit", _signup.default);
 if (logOutBtn) logOutBtn.addEventListener("click", _login.logout);
-if (conversations) (0, _chat.getConversations)(conversations, newMessageInput);
-if (newMessageInput && newMessageButton) (0, _chat.submitNewMessage)(newMessageInput, newMessageButton);
+if (conversations) (0, _chat.getConversations)(conversations);
+if (newMessageButton) (0, _chat.submitNewMessage)(newMessageButton);
 if (chatBox) (0, _chat.autoScroll)();
 var alertMessage = document.querySelector("body").dataset.alert;
 if (alertMessage) (0, _alerts.showAlert)("success", alertMessage, 10);

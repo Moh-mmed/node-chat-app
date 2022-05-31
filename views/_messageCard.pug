@@ -1,7 +1,16 @@
 mixin messageCard(message, userId)
     .message(class= (message.sender._id == userId ? "own":"")) 
-        .message__date SUN AT 20:22
         .message__top
             img.message__img(src='/img/default.png' alt='user')
             p.message__text= message.text
         //- .message__bottom= `${new Date( Date.now() - message.createdAt).getMinutes()} minutes ago`
+        - var dif = new Date().getTime() - message.createdAt.getTime()
+            if dif/(1000*3600)<1 
+              - div = `${Math.ceil(dif/(1000*60))} minutes`;
+            else if dif/(1000*3600*24)<1 
+              - div = `${Math.ceil(dif/(1000*3600))} hours`;
+            else if dif/(1000*3600*24*30)<1 
+              - div = `${Math.ceil(dif/(1000*3600*24))} days`;
+            else if dif/(1000*3600*24*31)>= 1 
+              - div = `${Math.ceil(dif/(1000*3600*24))} months`;
+        .message__bottom=div

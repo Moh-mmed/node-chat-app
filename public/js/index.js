@@ -27,9 +27,9 @@ if (signupForm) signupForm.addEventListener("submit", signup);
 
 if (logOutBtn) logOutBtn.addEventListener("click", logout);
 
-if (conversations) getConversations(conversations, newMessageInput);
+if (conversations) getConversations(conversations);
   
-if (newMessageInput && newMessageButton) submitNewMessage(newMessageInput, newMessageButton)
+if (newMessageButton) submitNewMessage(newMessageButton)
 
 if (chatBox) autoScroll();
 

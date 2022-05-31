@@ -5,19 +5,13 @@ html
       meta(charset='UTF-8')
       meta(name='viewport' content='width=device-width, initial-scale=1.0')
       link(rel='stylesheet' href='/css/style.css')
-      //-   link(rel='shortcut icon' type='image/png' href='/img/favicon.png')
       link(rel='stylesheet' href='https://fonts.googleapis.com/css?family=Lato:300,300i,700')
       title Chatli | #{title}
   
   body(data-alert=`${alert?alert:''}`)
-    //- include _header
-        
     block content
       h1 This is a placeholder heading, will be overwritten with a nex content
-      
-    //- include _footer
-    
-    //- script(src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js')
-    //- script(src='/js/index.js')
+
+    //- script(src="dist/timeago.js" type="text/javascript")
     script(src="/socket.io/socket.io.js")
     script(src='/js/bundle.js')

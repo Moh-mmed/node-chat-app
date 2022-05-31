@@ -66,6 +66,20 @@ socket.on("sendBackMessage", (msg) => {
   }
 });
   
+const removeAllSelectedClass = () => {
+  document.querySelectorAll('.conversation').forEach((con) => con.classList.remove("selected"));
+}
+const getMessages = async(conversationId) => {
+  const res = await axios({
+    method: "GET",
+    url: `http://127.0.0.1:8080/api/messages/${conversationId}`,
+  });
+  const data = res.data.data.messages;
+  const messages = data.map((msg) => createMessageElement(msg, userId));
+  chatBox.innerHTML = "";
+  messages.forEach((msg) => chatBox.appendChild(msg));
+  autoScroll();
+}
 export const autoScroll = () => {
   chatBox.scrollTop = chatBox.scrollHeight;
   // // New message element 
@@ -89,27 +103,18 @@ export const autoScroll = () => {
   //   chatBox.scrollTop = chatBox.scrollHeight
   // }
 }
-
-export const getConversations = (conversations, input) => {
+export const getConversations = (conversations) => {
   conversations.forEach((item) => {
     const conversationId = item.dataset.conversationId;
     const receiverId = item.dataset.receiverId;
+
     item.addEventListener("click", async (e) => {
-      input.dataset.conversationId = conversationId;
-      input.dataset.receiverId = receiverId;
+      inputField.dataset.conversationId = conversationId;
+      inputField.dataset.receiverId = receiverId;
 
-      conversations.forEach((con) => con.classList.remove("selected"));
+      removeAllSelectedClass()
       item.classList.add("selected");
-
-      const res = await axios({
-        method: "GET",
-        url: `http://127.0.0.1:8080/api/messages/${conversationId}`,
-      });
-      const data = res.data.data.messages;
-      const messages = data.map((msg) => createMessageElement(msg, userId));
-      chatBox.innerHTML = "";
-      messages.forEach((msg) => chatBox.appendChild(msg));
-      autoScroll();
+      getMessages(conversationId);
     });
   });
 };
@@ -120,6 +125,7 @@ export const getAllFriends = async (friends) => {
     url: `http://127.0.0.1:8080/api/conversations`,
   });
   const allConversations = res.data.data.conversations;
+
   const createFriendWrapper = (friend) => {
     const conversationContainer = document.createElement("div");
     const img = document.createElement("img");
@@ -151,15 +157,13 @@ export const getAllFriends = async (friends) => {
   allFriendsContainer.innerHTML = ''
   friends.forEach((friend) => createFriendWrapper(friend));
 
-
-
   //* Add event listener
   allFriendsContainer.childNodes.forEach(item => {
     item.addEventListener("click", async(e) => {
       let target = e.target;
       if (e.target.nodeName === "SPAN" || e.target.nodeName === "IMG")
         target = e.target.parentNode;
-      allFriendsContainer.childNodes.forEach(d => d.classList.remove('selected'))
+      removeAllSelectedClass();
       target.classList.add('selected')
 
       const receiverId = target.dataset.receiverId;
@@ -169,16 +173,7 @@ export const getAllFriends = async (friends) => {
       inputField.dataset.receiverId = receiverId;
 
       if (conversationId) {
-        //* Continue conversation
-        const res = await axios({
-          method: "GET",
-          url: `http://127.0.0.1:8080/api/messages/${conversationId}`,
-        });
-        const data = res.data.data.messages;
-        const messages = data.map((msg) => createMessageElement(msg, userId));
-        chatBox.innerHTML = "";
-        messages.forEach((msg) => chatBox.appendChild(msg));
-        autoScroll();
+        getMessages(conversationId);
       } else {
         //* Start new conversation
         chatBox.innerHTML = `<div class="start_conversation">Send message to start a new conversation</div>"`;
@@ -188,13 +183,13 @@ export const getAllFriends = async (friends) => {
 
 }
 
-export const submitNewMessage = (input, button) => {
+export const submitNewMessage = (button) => {
   button.addEventListener("click", async (e) => {
-    let conversationId = input.dataset.conversationId;
-    let receiverId = input.dataset.receiverId;
+    let conversationId = inputField.dataset.conversationId;
+    let receiverId = inputField.dataset.receiverId;
 
     if (conversationId === 'undefined') {
-      if (input.value === '') return
+      if (inputField.value === '') return
       try {
         const res = await axios({
           method: "POST",
@@ -218,9 +213,9 @@ export const submitNewMessage = (input, button) => {
         return;
       }
     }
-    const text = input.value.trim();
-    input.value = "";
-    input.focus();
+    const text = inputField.value.trim();
+    inputField.value = "";
+    inputField.focus();
     e.target.classList.add("disabled");
     try {
       const res = await axios({
