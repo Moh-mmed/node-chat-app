@@ -1,8 +1,3 @@
-// .chatOnline__friend
-//         .chatOnline__imgContainer
-//           img.chatOnline__img(src='/img/default.png' alt='user')
-//           .chatOnline__Badge
-//         span.chatOnline__Name Karim
 const onlineFriendsContainer = document.querySelector(".chatOnline");
 
 const createFriendBlock = (friend) => {
@@ -35,7 +30,6 @@ const createFriendBlock = (friend) => {
 
 export const setOnlineFriends = (onlineFriends) => {
     onlineFriendsContainer.innerHTML = "";
-    
     onlineFriends.forEach(friend => {
       onlineFriendsContainer.appendChild(createFriendBlock(friend));
   })

@@ -22,7 +22,7 @@ if (inputField) {
 socket.on("message", async(msg) => {
     const res = await axios({
       method: "GET",
-      url: "http://127.0.0.1:8080/api/users",
+      url: "/api/users",
     });
 
     const filteredFriends = res.data.data.users.filter(
@@ -39,7 +39,7 @@ socket.on("getUsers", async (users) => {
   if (!allFriends) {
     const res = await axios({
     method: "GET",
-    url: 'http://127.0.0.1:8080/api/users',
+    url: '/api/users',
     });
 
     allFriends = res.data.data.users;
@@ -72,7 +72,7 @@ const removeAllSelectedClass = () => {
 const getMessages = async(conversationId) => {
   const res = await axios({
     method: "GET",
-    url: `http://127.0.0.1:8080/api/messages/${conversationId}`,
+    url: `/api/messages/${conversationId}`,
   });
   const data = res.data.data.messages;
   const messages = data.map((msg) => createMessageElement(msg, userId));
@@ -122,7 +122,7 @@ export const getConversations = (conversations) => {
 export const getAllFriends = async (friends) => {
   const res = await axios({
     method: "GET",
-    url: `http://127.0.0.1:8080/api/conversations`,
+    url: `/api/conversations`,
   });
   const allConversations = res.data.data.conversations;
 
@@ -193,7 +193,7 @@ export const submitNewMessage = (button) => {
       try {
         const res = await axios({
           method: "POST",
-          url: "http://127.0.0.1:8080/api/conversations",
+          url: "/api/conversations",
           data: {
             senderId: userId,
             receiverId,
@@ -220,7 +220,7 @@ export const submitNewMessage = (button) => {
     try {
       const res = await axios({
         method: "POST",
-        url: "http://127.0.0.1:8080/api/messages",
+        url: "/api/messages",
         data: {
           conversationId,
           sender: userId,

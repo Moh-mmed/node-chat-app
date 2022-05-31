@@ -1,11 +1,6 @@
 // import * as timeago from "timeago.js";
 import {format} from "timeago.js";
 
-const getAppropriateDate = (time) => {
-  const messageDate = time;
-
-  return messageDate;
-};
 export const createMessageElement = (message, userId) => {
   const messageWrapper = document.createElement("div");
   const messageTop = document.createElement("div");
